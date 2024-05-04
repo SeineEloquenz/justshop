@@ -51,6 +51,7 @@ fun ShoppingListView(
 ) {
 
     val shoppingListUiState by shoppingListViewModel.uiState.collectAsState()
+    val sortedList = shoppingListUiState.items.sortedBy { it.timestamp }
 
     Column(
         modifier = modifier.fillMaxHeight(),
@@ -67,7 +68,7 @@ fun ShoppingListView(
             coroutineScope.launch {
                 listState.animateScrollToItem(shoppingListUiState.items.size)
             }
-            items(shoppingListUiState.items) { item ->
+            items(sortedList) { item ->
                 Row(
                     modifier = modifier.fillMaxWidth(),
                 ) {

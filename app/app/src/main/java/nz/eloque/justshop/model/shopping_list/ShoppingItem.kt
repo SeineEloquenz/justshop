@@ -10,4 +10,5 @@ data class ShoppingItem(
     val id: UUID,
     val content: String,
     val checked: Boolean = false,
+    val timestamp: Long = System.currentTimeMillis(),
 )
