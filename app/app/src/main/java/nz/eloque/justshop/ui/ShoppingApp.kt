@@ -24,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -31,10 +32,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import nz.eloque.justshop.ui.about.AboutView
 import nz.eloque.justshop.MainActivity
 import nz.eloque.justshop.R
+import nz.eloque.justshop.app.AppViewModelProvider
+import nz.eloque.justshop.ui.about.AboutView
 import nz.eloque.justshop.ui.components.shopping_list.ShoppingListView
+import nz.eloque.justshop.ui.components.shopping_list.ShoppingListViewModel
 
 sealed class Screen(val route: String, val icon: ImageVector, @StringRes val resourceId: Int) {
     data object ShoppingList : Screen("shoppingList", Icons.Default.ShoppingBag, R.string.justshop)
@@ -47,6 +50,8 @@ fun ShoppingList(
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
+    val shoppingListViewModel: ShoppingListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
     Surface(
         modifier = modifier
     ) {
@@ -60,7 +65,7 @@ fun ShoppingList(
                     navController = navController,
                     title = stringResource(id = R.string.justshop)
                 ) {
-                    ShoppingListView(navController, listState = listState)
+                    ShoppingListView(shoppingListViewModel)
                 }
             }
             composable(Screen.About.route) {
