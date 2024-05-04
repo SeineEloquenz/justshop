@@ -172,8 +172,7 @@ fun ShoppingItemCard(
                     onCheckedChange.invoke(!checkedState)
                 },
                 onLongClick = {
-                    //TODO this has to wait for stable sorting
-                    //openEditDialog.value = true
+                    openEditDialog.value = true
                 },
             )
     ) {
