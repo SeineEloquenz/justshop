@@ -17,4 +17,7 @@ interface ShoppingItemDao {
 
     @Query("DELETE from shopping_items")
     suspend fun deleteAll()
+
+    @Query("DELETE from shopping_items WHERE checked = 1")
+    suspend fun deleteChecked()
 }

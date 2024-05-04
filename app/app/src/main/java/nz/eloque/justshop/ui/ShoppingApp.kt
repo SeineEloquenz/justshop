@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.BottomAppBar
@@ -24,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -32,6 +34,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import kotlinx.coroutines.launch
 import nz.eloque.justshop.MainActivity
 import nz.eloque.justshop.R
 import nz.eloque.justshop.app.AppViewModelProvider
@@ -63,7 +66,19 @@ fun ShoppingList(
                 val listState = rememberLazyListState()
                 ShoppingListScaffold(
                     navController = navController,
-                    title = stringResource(id = R.string.justshop)
+                    title = stringResource(id = R.string.justshop),
+                    actions = {
+                        IconButton(onClick = {
+                            shoppingListViewModel.viewModelScope.launch{
+                                shoppingListViewModel.deleteChecked()
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = stringResource(R.string.remove_checked)
+                            )
+                        }
+                    }
                 ) {
                     ShoppingListView(shoppingListViewModel)
                 }

@@ -26,6 +26,10 @@ class ShoppingListManager(
         shoppingItemRepository.deleteAll()
     }
 
+    suspend fun deleteChecked() {
+        shoppingItemRepository.deleteChecked()
+    }
+
     companion object {
         private const val TAG = "ShoppingListManager"
     }

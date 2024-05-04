@@ -11,4 +11,5 @@
     <string name="license">License</string>
     <string name="item">Item</string>
     <string name="submit">Submit</string>
+    <string name="remove_checked">Remove Checked</string>
 </resources>

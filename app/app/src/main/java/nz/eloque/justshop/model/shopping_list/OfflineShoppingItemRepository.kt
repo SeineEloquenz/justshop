@@ -12,4 +12,6 @@ class OfflineShoppingItemRepository(private val shoppingItemDao: ShoppingItemDao
     }
 
     override suspend fun deleteAll() = shoppingItemDao.deleteAll()
+
+    override suspend fun deleteChecked() = shoppingItemDao.deleteChecked()
 }

@@ -57,6 +57,11 @@ class ShoppingListViewModel(
         updateList()
     }
 
+    suspend fun deleteChecked() {
+        shoppingListManager.deleteChecked()
+        updateList()
+    }
+
     companion object {
         private const val TAG = "MessageViewModel"
     }
