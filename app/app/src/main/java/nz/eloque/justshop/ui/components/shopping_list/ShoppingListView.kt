@@ -73,7 +73,7 @@ fun ShoppingListView(
                 ) {
                     ShoppingItemCard(
                         itemContent = item.content,
-                        inititalCheckedState = item.checked,
+                        checkedState = item.checked,
                         onCheckedChange = {
                             shoppingListViewModel.viewModelScope.launch {
                                 shoppingListViewModel.updateItem(item.copy(checked = it))
@@ -154,23 +154,21 @@ fun SubmitButton(
 @Composable
 fun ShoppingItemCard(
     itemContent: String,
-    inititalCheckedState: Boolean,
+    checkedState: Boolean,
     onCheckedChange: (Boolean) -> Unit = {},
     onEdit: (String) -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    val checkedState = remember { mutableStateOf(inititalCheckedState)}
     val openEditDialog = remember { mutableStateOf(false) }
 
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .padding(5.dp)
-            .alpha(if (checkedState.value) 0.25f else 1.0f)
+            .alpha(if (checkedState) 0.25f else 1.0f)
             .combinedClickable(
                 onClick = {
-                    onCheckedChange.invoke(!checkedState.value)
-                    checkedState.value = !checkedState.value
+                    onCheckedChange.invoke(!checkedState)
                 },
                 onLongClick = {
                     //TODO this has to wait for stable sorting
@@ -184,7 +182,7 @@ fun ShoppingItemCard(
             horizontalArrangement = Arrangement.spacedBy(5.dp)
         ) {
             Checkbox(
-                checked = checkedState.value,
+                checked = checkedState,
                 onCheckedChange = null
             )
             Text(
