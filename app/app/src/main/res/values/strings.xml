@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">justshop</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="justshop">JustShop</string>
+    <string name="about">About</string>
+    <string name="back">Back</string>
+    <string name="made_with_love">Made with ❤️ in Germany</string>
+    <string name="source_code">Source Code</string>
+    <string name="license">License</string>
+</resources>
