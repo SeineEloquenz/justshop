@@ -1,8 +1,11 @@
 package nz.eloque.justshop.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
@@ -11,21 +14,30 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
+import androidx.compose.material.icons.filled.SignalCellular4Bar
+import androidx.compose.material.icons.filled.SignalCellularConnectedNoInternet0Bar
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -40,6 +52,7 @@ import kotlinx.coroutines.launch
 import nz.eloque.justshop.MainActivity
 import nz.eloque.justshop.R
 import nz.eloque.justshop.app.AppViewModelProvider
+import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.ui.about.AboutView
 import nz.eloque.justshop.ui.settings.SettingsView
 import nz.eloque.justshop.ui.settings.SettingsViewModel
@@ -60,6 +73,7 @@ fun ShoppingList(
 ) {
     val shoppingListViewModel: ShoppingListViewModel = viewModel(factory = AppViewModelProvider.Factory)
     val settingsViewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsState(false)
 
     Surface(
         modifier = modifier
@@ -74,6 +88,11 @@ fun ShoppingList(
                     navController = navController,
                     title = stringResource(id = R.string.justshop),
                     actions = {
+                        Icon(
+                            imageVector = if (connectionStateFlow.value) Icons.Default.SignalCellular4Bar else Icons.Default.SignalCellularConnectedNoInternet0Bar,
+                            tint = if (connectionStateFlow.value) Color.Green else Color.Red,
+                            contentDescription = stringResource(R.string.connection_state)
+                        )
                         IconButton(onClick = {
                             shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                                 shoppingListViewModel.deleteChecked()
@@ -86,7 +105,25 @@ fun ShoppingList(
                         }
                     }
                 ) {
-                    ShoppingListView(shoppingListViewModel)
+                    if (!connectionStateFlow.value) {
+                        Dialog(onDismissRequest = {}) {
+                            Box(modifier = modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Image(
+                                    imageVector = Icons.Default.SignalCellularConnectedNoInternet0Bar,
+                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary),
+                                    contentDescription = stringResource(R.string.justshop),
+                                    contentScale = ContentScale.FillWidth,
+                                    modifier = Modifier.fillMaxWidth(0.5f),
+                                    alpha = 0.25f
+                                )
+                            }
+                        }
+                    }
+                    ShoppingListView(
+                        shoppingListViewModel
+                    )
                 }
             }
             composable(Screen.About.route) {

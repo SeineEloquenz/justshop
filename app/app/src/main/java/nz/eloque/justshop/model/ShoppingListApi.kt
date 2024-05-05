@@ -66,10 +66,12 @@ class ShoppingListApi(
                     val item = ShoppingItem.fromJson(json.getJSONObject(key))
                     map[item.id] = item
                 }
+                ConnectionStateObserver.updateConnectionState(true)
                 map
             }
         } catch (e: IOException) {
             Log.e(TAG, "Failed to call current", e)
+            ConnectionStateObserver.updateConnectionState(false)
             null
         }
     }

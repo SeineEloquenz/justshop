@@ -50,7 +50,6 @@ fun ShoppingListView(
     shoppingListViewModel: ShoppingListViewModel,
     modifier: Modifier = Modifier
 ) {
-
     val shoppingListUiState by shoppingListViewModel.uiState.collectAsState()
     val sortedList = shoppingListUiState.items.sortedBy { it.timestamp }
 
