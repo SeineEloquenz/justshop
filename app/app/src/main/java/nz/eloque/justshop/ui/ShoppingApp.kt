@@ -126,20 +126,30 @@ fun ShoppingList(
                     )
                 }
             }
-            composable(Screen.About.route) {
-                ShoppingListScaffold(
-                    navController = navController,
-                    title = stringResource(id = R.string.about)
-                ) {
-                    AboutView()
-                }
-            }
             composable(Screen.Settings.route) {
                 ShoppingListScaffold(
                     navController = navController,
-                    title = stringResource(id = R.string.settings)
+                    title = stringResource(id = R.string.settings),
+                    actions = {
+                        IconButton(onClick = {
+                            navController.navigate(Screen.About.route) }) {
+                            Icon(
+                                imageVector = Icons.Default.Info,
+                                contentDescription = stringResource(R.string.about)
+                            )
+                        }
+                    }
                 ) {
                     SettingsView(settingsViewModel)
+                }
+            }
+            composable(Screen.About.route) {
+                ShoppingListScaffold(
+                    navController = navController,
+                    title = stringResource(id = R.string.about),
+                    toolWindow = true
+                ) {
+                    AboutView()
                 }
             }
         }
@@ -161,7 +171,6 @@ fun ShoppingListScaffold(
 ) {
     val items = listOf(
         Screen.ShoppingList,
-        Screen.About,
         Screen.Settings,
     )
 
