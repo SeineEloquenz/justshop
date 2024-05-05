@@ -37,7 +37,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -106,19 +105,17 @@ fun ShoppingList(
                     }
                 ) {
                     if (!connectionStateFlow.value) {
-                        Dialog(onDismissRequest = {}) {
-                            Box(modifier = modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Image(
-                                    imageVector = Icons.Default.SignalCellularConnectedNoInternet0Bar,
-                                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary),
-                                    contentDescription = stringResource(R.string.justshop),
-                                    contentScale = ContentScale.FillWidth,
-                                    modifier = Modifier.fillMaxWidth(0.5f),
-                                    alpha = 0.25f
-                                )
-                            }
+                        Box(modifier = modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Image(
+                                imageVector = Icons.Default.SignalCellularConnectedNoInternet0Bar,
+                                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.secondary),
+                                contentDescription = stringResource(R.string.justshop),
+                                contentScale = ContentScale.FillWidth,
+                                modifier = Modifier.fillMaxWidth(0.5f),
+                                alpha = 0.25f
+                            )
                         }
                     }
                     ShoppingListView(
