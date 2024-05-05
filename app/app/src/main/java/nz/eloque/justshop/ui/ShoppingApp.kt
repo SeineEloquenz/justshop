@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,16 +35,20 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.MainActivity
 import nz.eloque.justshop.R
 import nz.eloque.justshop.app.AppViewModelProvider
 import nz.eloque.justshop.ui.about.AboutView
-import nz.eloque.justshop.ui.components.shopping_list.ShoppingListView
-import nz.eloque.justshop.ui.components.shopping_list.ShoppingListViewModel
+import nz.eloque.justshop.ui.settings.SettingsView
+import nz.eloque.justshop.ui.settings.SettingsViewModel
+import nz.eloque.justshop.ui.shopping_list.ShoppingListView
+import nz.eloque.justshop.ui.shopping_list.ShoppingListViewModel
 
 sealed class Screen(val route: String, val icon: ImageVector, @StringRes val resourceId: Int) {
     data object ShoppingList : Screen("shoppingList", Icons.Default.ShoppingBag, R.string.justshop)
+    data object Settings : Screen("settings", Icons.Default.Settings, R.string.settings)
     data object About : Screen("about", Icons.Default.Info, R.string.about)
 }
 
@@ -54,6 +59,7 @@ fun ShoppingList(
     modifier: Modifier = Modifier
 ) {
     val shoppingListViewModel: ShoppingListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val settingsViewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
     Surface(
         modifier = modifier
@@ -69,7 +75,7 @@ fun ShoppingList(
                     title = stringResource(id = R.string.justshop),
                     actions = {
                         IconButton(onClick = {
-                            shoppingListViewModel.viewModelScope.launch{
+                            shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                                 shoppingListViewModel.deleteChecked()
                             }
                         }) {
@@ -91,6 +97,14 @@ fun ShoppingList(
                     AboutView()
                 }
             }
+            composable(Screen.Settings.route) {
+                ShoppingListScaffold(
+                    navController = navController,
+                    title = stringResource(id = R.string.settings)
+                ) {
+                    SettingsView(settingsViewModel)
+                }
+            }
         }
     }
 }
@@ -110,7 +124,8 @@ fun ShoppingListScaffold(
 ) {
     val items = listOf(
         Screen.ShoppingList,
-        Screen.About
+        Screen.About,
+        Screen.Settings,
     )
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()

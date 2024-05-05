@@ -1,4 +1,4 @@
-package nz.eloque.justshop.ui.components.shopping_list
+package nz.eloque.justshop.ui.shopping_list
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
@@ -39,6 +39,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
@@ -76,12 +77,12 @@ fun ShoppingListView(
                         itemContent = item.content,
                         checkedState = item.checked,
                         onCheckedChange = {
-                            shoppingListViewModel.viewModelScope.launch {
+                            shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                                 shoppingListViewModel.updateItem(item.copy(checked = it))
                             }
                         },
                         onEdit = {
-                            shoppingListViewModel.viewModelScope.launch {
+                            shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                                 shoppingListViewModel.updateItem(item.copy(content = it))
                             }
                         },
@@ -90,7 +91,7 @@ fun ShoppingListView(
             }
         }
         AddItemField(onSubmit = {
-            shoppingListViewModel.viewModelScope.launch {
+            shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                 shoppingListViewModel.updateItem(ShoppingItem(UUID.randomUUID(), it, checked = false))
             }
         })

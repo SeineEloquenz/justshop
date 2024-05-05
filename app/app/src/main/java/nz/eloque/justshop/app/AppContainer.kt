@@ -3,6 +3,8 @@ package nz.eloque.justshop.app
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.preference.PreferenceManager
+import nz.eloque.justshop.Preferences
+import nz.eloque.justshop.model.ShoppingListApi
 import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.OfflineShoppingItemRepository
 import nz.eloque.justshop.model.shopping_list.ShoppingItemDb
@@ -20,7 +22,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val shoppingListManager: ShoppingListManager by lazy {
         ShoppingListManager(
-            OfflineShoppingItemRepository(ShoppingItemDb.getDb(context).dao())
-        )
+            OfflineShoppingItemRepository(ShoppingItemDb.getDb(context).dao()),
+            ShoppingListApi { prefs.getString(Preferences.SERVER_URL, "")!! }
+        ) { prefs.getLong(Preferences.SYNC_INTERVAL, 1) }
     }
 }

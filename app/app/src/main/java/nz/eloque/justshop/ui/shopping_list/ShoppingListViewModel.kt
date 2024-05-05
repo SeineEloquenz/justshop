@@ -1,4 +1,4 @@
-package nz.eloque.justshop.ui.components.shopping_list
+package nz.eloque.justshop.ui.shopping_list
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
