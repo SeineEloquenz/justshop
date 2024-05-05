@@ -1,10 +1,11 @@
 use std::sync::{Arc, RwLock};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 use warp::{Filter, Rejection, Reply};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 struct ShoppingItem {
-    id: u128,
+    id: Uuid,
     content: String,
     checked: bool,
     timestamp: u64,
