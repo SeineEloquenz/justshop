@@ -7,6 +7,7 @@ struct ShoppingItem {
     id: u128,
     content: String,
     checked: bool,
+    timestamp: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
