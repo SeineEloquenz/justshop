@@ -27,7 +27,7 @@ class SettingsViewModel(
 
     init {
         if (!prefs.contains(Preferences.SERVER_URL)) {
-            updateServerUrl("http://192.168.0.30:3030")
+            updateServerUrl("https://justshop.eloque.nz")
         }
         if (!prefs.contains(Preferences.SYNC_INTERVAL)) {
             updateSyncInterval(1)
