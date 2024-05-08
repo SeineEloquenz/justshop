@@ -1,4 +1,4 @@
-name: Build Debug
+name: Build Debug App
 
 # Controls when the workflow will run
 on:
