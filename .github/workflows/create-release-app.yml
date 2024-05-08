@@ -28,6 +28,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - name: Assemble Release
+        working-directory: ./app
         run: ./gradlew assembleGithubRelease
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -37,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: app/build/outputs/apk/githubRelease
+          path: app/app/build/outputs/apk/githubRelease
 
   release:
     name: Release Apk

@@ -35,4 +35,5 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       - name: Build
+        working-directory: ./app
         run: ./gradlew assembleDebug
