@@ -119,6 +119,7 @@ class ShoppingListApi(
     private suspend fun delete(url: String): Response {
         val request: Request = Request.Builder()
             .url(url)
+            .delete()
             .build()
         return client.newCall(request).execute()
     }
