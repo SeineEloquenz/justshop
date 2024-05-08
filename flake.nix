@@ -21,6 +21,6 @@
       app = pkgs.callPackage ./app {};
     };
 
-    nixosModules.default = pkgs.callPackage ./nixosModule { justshop = backend; };
+    nixosModules.default = import ./nixosModule { justshop = backend; };
   };
 }

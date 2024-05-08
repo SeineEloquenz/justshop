@@ -1,7 +1,8 @@
+{ justshop }:
+
 { config
 , pkgs
 , lib
-, justshop
 , ... }:
 
 let
