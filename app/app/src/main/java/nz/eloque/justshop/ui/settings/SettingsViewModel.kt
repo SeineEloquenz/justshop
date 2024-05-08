@@ -14,6 +14,8 @@ import nz.eloque.justshop.model.EmberObserver
 data class SettingsUiState(
     val serverUrl: String = "",
     val syncInterval: Long = 1,
+    val userName: String = "",
+    val password: String = ""
 )
 
 class SettingsViewModel(
@@ -37,7 +39,9 @@ class SettingsViewModel(
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
                 serverUrl = prefs.getString(Preferences.SERVER_URL, "")!!,
-                syncInterval = prefs.getLong(Preferences.SYNC_INTERVAL, 1)
+                syncInterval = prefs.getLong(Preferences.SYNC_INTERVAL, 1),
+                userName = prefs.getString(Preferences.USER_NAME, "")!!,
+                password = prefs.getString(Preferences.PASSWORD, "")!!,
             )
             Log.d(TAG, "Updated Settings!")
         }
@@ -50,6 +54,16 @@ class SettingsViewModel(
 
     fun updateSyncInterval(interval: Long) {
         prefs.edit().putLong(Preferences.SYNC_INTERVAL, interval).apply()
+        notifyOfChange()
+    }
+
+    fun updateUserName(userName: String) {
+        prefs.edit().putString(Preferences.USER_NAME, userName).apply()
+        notifyOfChange()
+    }
+
+    fun updatePassword(password: String) {
+        prefs.edit().putString(Preferences.PASSWORD, password).apply()
         notifyOfChange()
     }
 

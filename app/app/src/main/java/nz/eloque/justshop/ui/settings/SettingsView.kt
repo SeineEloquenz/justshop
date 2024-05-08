@@ -44,5 +44,19 @@ fun SettingsView(
             inputValidator = { it.toLongOrNull() != null },
             onSubmit = { settingsViewModel.updateSyncInterval(it.toLong()) }
         )
+        SubmittableTextField(
+            label = { Text(stringResource(R.string.api_user_name)) },
+            imageVector = Icons.Filled.Save,
+            initialValue = uiState.userName,
+            clearOnSubmit = false,
+            onSubmit = settingsViewModel::updateUserName
+        )
+        SubmittableTextField(
+            label = { Text(stringResource(R.string.api_password)) },
+            imageVector = Icons.Filled.Save,
+            initialValue = uiState.password,
+            clearOnSubmit = false,
+            onSubmit = settingsViewModel::updatePassword
+        )
     }
 }

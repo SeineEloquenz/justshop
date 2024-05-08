@@ -4,6 +4,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
+import nz.eloque.justshop.model.api.ShoppingListApi
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
 

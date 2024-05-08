@@ -16,4 +16,6 @@
     <string name="server_url">Synchronization Server Url</string>
     <string name="settings">Settings</string>
     <string name="connection_state">Connection State</string>
+    <string name="api_user_name">API Username</string>
+    <string name="api_password">API Password</string>
 </resources>

@@ -1,7 +1,10 @@
-package nz.eloque.justshop.model
+package nz.eloque.justshop.model.api
 
 import android.util.Log
+import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
+import okhttp3.Credentials
+import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,11 +16,37 @@ import org.json.JSONObject
 import java.io.IOException
 import java.util.UUID
 
+class BasicAuthInterceptor(
+    private val usernameProvider: () -> String,
+    private val passwordProvider: () -> String
+) : Interceptor {
+
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val req = chain.request()
+        val username = usernameProvider.invoke()
+        val password = passwordProvider.invoke()
+        return if (username != "" && password != "") {
+            val credentials = Credentials.basic(usernameProvider.invoke(), passwordProvider.invoke())
+            val authenticatedRequest = req.newBuilder()
+                .header("Authorization", credentials)
+                .build()
+            chain.proceed(authenticatedRequest)
+        } else {
+            chain.proceed(req)
+        }
+
+    }
+}
+
 class ShoppingListApi(
-    private val serverUrlProvider: () -> String
+    private val serverUrlProvider: () -> String,
+    usernameProvider: () -> String,
+    passwordProvider: () -> String,
 ) {
     private val mediaType = "application/json".toMediaType()
-    private val client = OkHttpClient()
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(BasicAuthInterceptor(usernameProvider, passwordProvider))
+        .build()
 
     suspend fun deleteChecked() {
         try {
