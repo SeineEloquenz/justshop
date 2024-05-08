@@ -47,6 +47,9 @@ in {
 
     users.users."${cfg.user}" = {
       isSystemUser = true;
+      group = "justshop";
     };
+
+    users.groups.justshop = {};
   };
 }
