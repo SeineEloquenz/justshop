@@ -29,4 +29,6 @@ jobs:
         with:
           gradle-home-cache-cleanup: true
 
-      - run: ./gradlew assembleDebug
+      - name: Assemble Debug
+        working-directory: ./app
+        run: ./gradlew assembleDebug
