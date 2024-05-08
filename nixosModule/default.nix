@@ -31,7 +31,7 @@ in {
 
   config = lib.mkIf cfg.enable {
 
-    systemd.services."matrix-spotdl" = {
+    systemd.services."justshop" = {
       description = "justshop | a simple shopping list synchronization server";
       after = [ "network.target" ];
       wantedBy = [ "multi-user.target" ];
@@ -43,6 +43,10 @@ in {
         KillMode = "process";
         Restart = "on-failure";
       };
+    };
+
+    users.users."${cfg.user}" = {
+      isSystemUser = true;
     };
   };
 }
