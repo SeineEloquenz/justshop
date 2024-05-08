@@ -19,12 +19,12 @@ in {
     user = mkOption {
       type = types.str;
       default = "justshop";
-      description = "The system user the bot runs under";
+      description = "The system user the server runs under";
     };
     stateDir = mkOption {
       type = types.str;
-      default = false;
-      description = "Path to bot's state directory";
+      default = "/var/lib/justshop";
+      description = "Path to server's state directory";
     };
   };
 
