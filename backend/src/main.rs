@@ -38,14 +38,14 @@ async fn update_shopping_item(updated_item: ShoppingItem, shopping_list: Arc<RwL
     Ok(warp::reply())
 }
 
-// Handler for DELETE all endpoint
+// Handler for DELETE checked endpoint
 async fn delete_checked(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<impl Reply, Rejection> {
     let mut list = shopping_list.write().unwrap();
     list.retain(|_, value| !value.checked);
     Ok(warp::reply())
 }
 
-// Handler for DELETE checked endpoint
+// Handler for DELETE all endpoint
 async fn delete_all(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<impl Reply, Rejection> {
     let mut list = shopping_list.write().unwrap();
     list.clear();
