@@ -10,15 +10,17 @@
       config = { allowUnfree = true; };
     };
 
+    backend = pkgs.callPackage ./backend/default.nix {};
+
   in {
     packages.${system} = {
-      backend = pkgs.callPackage ./backend/default.nix {};
+      inherit backend;
     };
 
     devShells.${system} = {
       app = pkgs.callPackage ./app {};
     };
 
-    nixosModules.default = import ./nixosModule;
+    nixosModules.default = import ./nixosModule { justshop = backend; };
   };
 }
