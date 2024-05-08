@@ -37,7 +37,7 @@ in {
       wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
-        ExecStart = "${justshop}/bin/justshop-backend ${cfg.stateDir}";
+        ExecStart = "${justshop}/bin/justshop-backend --state-file ${cfg.stateDir}/state.json";
         User = cfg.user;
         Type = "simple";
         KillMode = "process";
