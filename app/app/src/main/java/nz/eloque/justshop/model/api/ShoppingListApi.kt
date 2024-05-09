@@ -13,7 +13,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.IOException
 import java.util.UUID
 
 class BasicAuthInterceptor(
@@ -54,7 +53,7 @@ class ShoppingListApi(
             if (res.code != 200) {
                 Log.d(TAG, "Delete-Checked ${res.code}")
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e(TAG, "Failed to call delete-checked", e)
         }
     }
@@ -65,7 +64,7 @@ class ShoppingListApi(
             if (res.code != 200) {
                 Log.d(TAG, "Delete-All ${res.code}")
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e(TAG, "Failed to call delete-all", e)
         }
     }
@@ -77,7 +76,7 @@ class ShoppingListApi(
             if (res.code != 200) {
                 Log.d(TAG, "Update ${res.code}")
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e(TAG, "Failed to call update for item ${item.id}", e)
         }
     }
@@ -98,7 +97,7 @@ class ShoppingListApi(
                 ConnectionStateObserver.updateConnectionState(true)
                 map
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             Log.e(TAG, "Failed to call current", e)
             ConnectionStateObserver.updateConnectionState(false)
             null
