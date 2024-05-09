@@ -148,7 +148,11 @@ fun ShoppingItemCard(
                         label = { Text(stringResource(R.string.item)) },
                         initialValue = itemContent,
                         imageVector = Icons.Default.Done,
-                        onSubmit = onEdit
+                        clearOnSubmit = false,
+                        onSubmit = {
+                            onEdit.invoke(it)
+                            openEditDialog.value = false
+                        }
                     )
                 }
             }
