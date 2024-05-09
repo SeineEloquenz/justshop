@@ -24,7 +24,7 @@ class AppDataContainer(private val context: Context) : AppContainer {
         ShoppingListManager(
             OfflineShoppingItemRepository(ShoppingItemDb.getDb(context).dao()),
             ShoppingListApi(
-                { prefs.getString(Preferences.SERVER_URL, "")!! },
+                { prefs.getString(Preferences.SERVER_URL, "https://justshop.eloque.nz")!! },
                 { prefs.getString(Preferences.USER_NAME, "")!! },
                 { prefs.getString(Preferences.PASSWORD, "")!! }
             )
