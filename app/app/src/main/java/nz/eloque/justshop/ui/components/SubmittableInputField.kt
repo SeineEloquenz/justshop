@@ -39,7 +39,9 @@ fun SubmittableTextField(
         modifier = modifier,
     ) {
         val maxWidth = maxWidth
-        Row {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
             OutlinedTextField(
                 value = msgInput.value,
                 label = label,
