@@ -118,7 +118,7 @@ async fn main() {
         tokio::spawn(async move {
             loop {
                 save_state(&state_path, shopping_list.clone()).expect("Failed saving data to state file");
-                tokio::time::sleep(Duration::from_secs(5)).await;
+                tokio::time::sleep(Duration::from_secs(300)).await;
             }
         });
     }
