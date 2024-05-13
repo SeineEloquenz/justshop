@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path,PathBuf};
 use std::io:: {BufReader,BufWriter};
 use std::fs::File;
+use tokio::time::Duration;
 use uuid::Uuid;
 use warp::{Filter, Rejection, Reply};
 
@@ -94,10 +95,25 @@ async fn main() {
         .or(delete_checked_route)
         .or(delete_all_route);
 
-    ctrlc::set_handler(move || {
-        save_state(&state_path, shopping_list.clone()).expect("Failed saving data to state file");
-        std::process::exit(0);
-    }).expect("Could not set sigterm handler");
+    {
+        let state_path = state_path.clone();
+        let shopping_list = shopping_list.clone();
+        ctrlc::set_handler(move || {
+            save_state(&state_path.clone(), shopping_list.clone()).expect("Failed saving data to state file");
+            std::process::exit(0);
+        }).expect("Could not set sigterm handler");
+    }
+
+    {
+        let state_path = state_path.clone();
+        let shopping_list = shopping_list.clone();
+        tokio::spawn(async move {
+            loop {
+                save_state(&state_path, shopping_list.clone()).expect("Failed saving data to state file");
+                tokio::time::sleep(Duration::from_secs(5)).await;
+            }
+        });
+    }
 
     // Start server
     warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
