@@ -1,4 +1,5 @@
 use clap::Parser;
+use tokio::fs;
 use std::sync::{Arc, RwLock};
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
@@ -106,10 +107,12 @@ async fn main() {
     {
         let state_path = state_path.clone();
         let shopping_list = shopping_list.clone();
-        ctrlc::set_handler(move || {
-            save_state(&state_path.clone(), shopping_list.clone()).expect("Failed saving data to state file");
+        tokio::spawn(async move {
+            tokio::signal::ctrl_c().await.unwrap();
+            info!("Received signal, stopping server.");
+            save_state(&state_path.clone(), shopping_list.clone()).await.expect("Failed saving data to state file");
             std::process::exit(0);
-        }).expect("Could not set sigterm handler");
+        });
     }
 
     {
@@ -117,7 +120,7 @@ async fn main() {
         let shopping_list = shopping_list.clone();
         tokio::spawn(async move {
             loop {
-                save_state(&state_path, shopping_list.clone()).expect("Failed saving data to state file");
+                save_state(&state_path, shopping_list.clone()).await.expect("Failed saving data to state file");
                 tokio::time::sleep(Duration::from_secs(300)).await;
             }
         });
@@ -140,8 +143,10 @@ fn load_state(state_path: &PathBuf) -> Result<HashMap<Uuid, ShoppingItem>, tokio
     }
 }
 
-fn save_state(state_path: &PathBuf, shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<(), tokio::io::Error> {
+async fn save_state(state_path: &PathBuf, shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<(), tokio::io::Error> {
     let file = File::create(&state_path)?;
+    let parent_dir = state_path.parent().expect("Invalid dir path");
+    let _ = fs::create_dir_all(parent_dir).await;
     let writer = BufWriter::new(file);
     serde_json::to_writer_pretty(writer, &*shopping_list.read().unwrap())?;
     info!("Saved back data to disk");
