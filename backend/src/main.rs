@@ -6,6 +6,7 @@ use std::path::{Path,PathBuf};
 use std::io:: {BufReader,BufWriter};
 use std::fs::File;
 use tokio::time::Duration;
+use tracing::info;
 use uuid::Uuid;
 use warp::{Filter, Rejection, Reply};
 
@@ -35,6 +36,7 @@ async fn get_shopping_list(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>
 // Handler for POST item endpoint
 async fn update_shopping_item(updated_item: ShoppingItem, shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<impl Reply, Rejection> {
     let mut list = shopping_list.write().unwrap();
+    info!("Updating item {:?}.", updated_item);
     list.insert(updated_item.id, updated_item);
     Ok(warp::reply())
 }
@@ -42,7 +44,10 @@ async fn update_shopping_item(updated_item: ShoppingItem, shopping_list: Arc<RwL
 // Handler for DELETE checked endpoint
 async fn delete_checked(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<impl Reply, Rejection> {
     let mut list = shopping_list.write().unwrap();
+    let old_count = list.len();
     list.retain(|_, value| !value.checked);
+    let new_count = list.len();
+    info!("Removed {} checked items.", old_count - new_count);
     Ok(warp::reply())
 }
 
@@ -50,11 +55,14 @@ async fn delete_checked(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>)
 async fn delete_all(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>) -> Result<impl Reply, Rejection> {
     let mut list = shopping_list.write().unwrap();
     list.clear();
+    info!("Removed all items.");
     Ok(warp::reply())
 }
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt().init();
+
     // Initialize empty shopping list
 
     let cli = Cli::parse();
@@ -124,8 +132,10 @@ fn load_state(state_path: &PathBuf) -> Result<HashMap<Uuid, ShoppingItem>, tokio
         let file = File::open(state_path).expect("Failed to open state file.");
         let reader = BufReader::new(file);
         let data: HashMap<Uuid, ShoppingItem> = serde_json::from_reader(reader)?;
+        info!("Loaded data from disk.");
         Ok(data)
     } else {
+        info!("State file missing, loading intially empty State.");
         Ok(HashMap::new())
     }
 }
@@ -134,5 +144,6 @@ fn save_state(state_path: &PathBuf, shopping_list: Arc<RwLock<HashMap<Uuid, Shop
     let file = File::create(&state_path)?;
     let writer = BufWriter::new(file);
     serde_json::to_writer_pretty(writer, &*shopping_list.read().unwrap())?;
+    info!("Saved back data to disk");
     Ok(())
 }
