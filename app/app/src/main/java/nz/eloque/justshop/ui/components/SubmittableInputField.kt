@@ -15,6 +15,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardCapitalization
 
 
 @Composable
@@ -48,7 +49,10 @@ fun SubmittableTextField(
                 singleLine = true,
                 isError = isError.value,
                 modifier = modifier.width(maxWidth * 0.8f),
-                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Done
+                ),
                 keyboardActions = KeyboardActions(onAny = {
                     if (validInput()) {
                         onSubmit.invoke(msgInput.value)
