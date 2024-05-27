@@ -22,6 +22,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -77,14 +78,17 @@ fun ShoppingListView(
                 }
             }
         }
+        val coroutineScope = rememberCoroutineScope()
         SubmittableTextField(
             label = { Text(stringResource(R.string.item)) },
             imageVector = Icons.Filled.Done,
             initialValue = "",
             onSubmit = {
+                coroutineScope.launch {
+                    listState.animateScrollToItem(shoppingListUiState.items.size)
+                }
                 shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                     shoppingListViewModel.updateItem(ShoppingItem(UUID.randomUUID(), it, checked = false))
-                    listState.animateScrollToItem(shoppingListUiState.items.size)
                 }
             }
         )
