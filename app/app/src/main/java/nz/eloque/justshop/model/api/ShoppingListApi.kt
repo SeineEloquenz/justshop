@@ -1,8 +1,9 @@
 package nz.eloque.justshop.model.api
 
 import android.util.Log
-import nz.eloque.justshop.model.ConnectionStateObserver
+import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
+import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -38,18 +39,40 @@ class BasicAuthInterceptor(
 }
 
 class ShoppingListApi(
-    private val serverUrlProvider: () -> String,
+    serverUrlProvider: () -> String,
     usernameProvider: () -> String,
     passwordProvider: () -> String,
+    private val onListUpdate: (Map<UUID, ShoppingItem>) -> Unit,
 ) {
+    private val apiVersion = "v1"
+
+    private val baseUrlProvider = {
+        serverUrlProvider.invoke() + "/" + apiVersion
+    }
+    init {
+
+    }
+
     private val mediaType = "application/json".toMediaType()
     private val client = OkHttpClient.Builder()
         .addInterceptor(BasicAuthInterceptor(usernameProvider, passwordProvider))
         .build()
 
+    fun connect() {
+        Log.i(TAG, "Starting WebSocket Connection")
+        val websocket = client
+            .newWebSocket(
+                Request.Builder().url("${baseUrlProvider.invoke()}/ws").build(),
+                ApiWebSocketListener(onListUpdate) {
+                    Thread.sleep(1000)
+                    this.connect()
+                }
+            )
+    }
+
     suspend fun deleteChecked() {
         try {
-            val res = delete("${serverUrlProvider.invoke()}/delete-checked")
+            val res = delete("${baseUrlProvider.invoke()}/delete-checked")
             if (res.code != 200) {
                 Log.d(TAG, "Delete-Checked ${res.code}")
             }
@@ -60,7 +83,7 @@ class ShoppingListApi(
 
     suspend fun deleteAll() {
         try {
-            val res = delete("${serverUrlProvider.invoke()}/delete-checked")
+            val res = delete("${baseUrlProvider.invoke()}/delete-checked")
             if (res.code != 200) {
                 Log.d(TAG, "Delete-All ${res.code}")
             }
@@ -72,35 +95,12 @@ class ShoppingListApi(
     suspend fun update(item: ShoppingItem) {
         try {
             val json = item.toJson()
-            val res = post("${serverUrlProvider.invoke()}/update", json.toString())
+            val res = post("${baseUrlProvider.invoke()}/update", json.toString())
             if (res.code != 200) {
                 Log.d(TAG, "Update ${res.code}")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to call update for item ${item.id}", e)
-        }
-    }
-
-    suspend fun all(): Map<UUID, ShoppingItem>? {
-        return try {
-            val resp = get("${serverUrlProvider.invoke()}/current")
-            Log.d(TAG, "All ${resp.code}")
-            return if (resp.code != 200) {
-                null
-            } else {
-                val json = JSONObject(resp.body!!.string())
-                val map = HashMap<UUID, ShoppingItem>()
-                for (key in json.keys()) {
-                    val item = ShoppingItem.fromJson(json.getJSONObject(key))
-                    map[item.id] = item
-                }
-                ConnectionStateObserver.updateConnectionState(true)
-                map
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to call current", e)
-            ConnectionStateObserver.updateConnectionState(false)
-            null
         }
     }
 

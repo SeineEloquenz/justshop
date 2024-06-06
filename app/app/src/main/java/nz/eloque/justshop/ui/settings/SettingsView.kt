@@ -37,14 +37,6 @@ fun SettingsView(
             onSubmit = settingsViewModel::updateServerUrl
         )
         SubmittableTextField(
-            label = { Text(stringResource(R.string.sync_interval)) },
-            imageVector = Icons.Filled.Save,
-            initialValue = uiState.syncInterval.toString(),
-            clearOnSubmit = false,
-            inputValidator = { it.toLongOrNull() != null },
-            onSubmit = { settingsViewModel.updateSyncInterval(it.toLong()) }
-        )
-        SubmittableTextField(
             label = { Text(stringResource(R.string.api_user_name)) },
             imageVector = Icons.Filled.Save,
             initialValue = uiState.userName,

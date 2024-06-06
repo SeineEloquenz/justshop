@@ -21,13 +21,17 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
 
     override val shoppingListManager: ShoppingListManager by lazy {
+        val shoppingItemRepository = OfflineShoppingItemRepository(ShoppingItemDb.getDb(context).dao())
         ShoppingListManager(
-            OfflineShoppingItemRepository(ShoppingItemDb.getDb(context).dao()),
+            shoppingItemRepository,
             ShoppingListApi(
                 { prefs.getString(Preferences.SERVER_URL, "https://justshop.eloque.nz")!! },
                 { prefs.getString(Preferences.USER_NAME, "")!! },
-                { prefs.getString(Preferences.PASSWORD, "")!! }
+                { prefs.getString(Preferences.PASSWORD, "")!! },
+                {
+                shoppingListManager.handleApiUpdate(it)
+                },
             )
-        ) { prefs.getLong(Preferences.SYNC_INTERVAL, 1) }
+        )
     }
 }

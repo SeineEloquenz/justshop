@@ -7,35 +7,28 @@ import kotlinx.coroutines.launch
 import nz.eloque.justshop.model.api.ShoppingListApi
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
+import java.util.UUID
 
 class ShoppingListManager(
     private val shoppingItemRepository: ShoppingItemRepository,
     private val shoppingListApi: ShoppingListApi,
-    private val syncIntervalProvider: () -> Long,
 ): EmberObservable {
     private val observers = HashSet<EmberObserver>()
-    private val backgroundSyncTask = {
-        while (true) {
-            CoroutineScope(Dispatchers.IO).launch {
-                val result = shoppingListApi.all()
-                if (result != null) {
-                    shoppingItemRepository.deleteAll()
-                    result.forEach { (_, value) ->
-                        shoppingItemRepository.insert(value)
-                    }
-                }
-                notifyObservers()
+
+    init {
+        shoppingListApi.connect()
+    }
+
+    fun handleApiUpdate(listUpdate: Map<UUID, ShoppingItem>) {
+        CoroutineScope(Dispatchers.IO).launch {
+            listUpdate.forEach { (_, value) ->
+                shoppingItemRepository.insert(value)
             }
-            Thread.sleep(1000 * syncIntervalProvider.invoke())
+            notifyObservers()
         }
     }
 
-    init {
-        Thread(backgroundSyncTask).start()
-    }
-
     suspend fun update(shoppingItem: ShoppingItem) {
-        shoppingItemRepository.insert(shoppingItem)
         shoppingListApi.update(shoppingItem)
     }
 
