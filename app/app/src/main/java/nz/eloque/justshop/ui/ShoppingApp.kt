@@ -14,7 +14,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
-import androidx.compose.material.icons.filled.SignalCellular4Bar
 import androidx.compose.material.icons.filled.SignalCellularConnectedNoInternet0Bar
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,7 +30,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
@@ -87,11 +85,6 @@ fun ShoppingList(
                     navController = navController,
                     title = stringResource(id = R.string.justshop),
                     actions = {
-                        Icon(
-                            imageVector = if (connectionStateFlow.value) Icons.Default.SignalCellular4Bar else Icons.Default.SignalCellularConnectedNoInternet0Bar,
-                            tint = if (connectionStateFlow.value) Color.Green else Color.Red,
-                            contentDescription = stringResource(R.string.connection_state)
-                        )
                         IconButton(onClick = {
                             shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                                 shoppingListViewModel.deleteChecked()
