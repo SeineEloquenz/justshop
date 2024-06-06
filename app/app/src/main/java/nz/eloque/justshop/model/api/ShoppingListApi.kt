@@ -1,9 +1,7 @@
 package nz.eloque.justshop.model.api
 
 import android.util.Log
-import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
-import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
 import okhttp3.Credentials
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
@@ -48,9 +46,6 @@ class ShoppingListApi(
 
     private val baseUrlProvider = {
         serverUrlProvider.invoke() + "/" + apiVersion
-    }
-    init {
-
     }
 
     private val mediaType = "application/json".toMediaType()
