@@ -12,8 +12,8 @@ android {
         applicationId = "nz.eloque.justshop"
         minSdk = 28
         targetSdk = 34
-        versionCode = 6
-        versionName = "0.2.0"
+        versionCode = 7
+        versionName = "0.2.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

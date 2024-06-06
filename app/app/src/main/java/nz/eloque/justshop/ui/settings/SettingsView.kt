@@ -40,6 +40,7 @@ fun SettingsView(
             label = { Text(stringResource(R.string.api_user_name)) },
             imageVector = Icons.Filled.Save,
             initialValue = uiState.userName,
+            mayBeEmpty = true,
             clearOnSubmit = false,
             onSubmit = settingsViewModel::updateUserName
         )
@@ -47,6 +48,7 @@ fun SettingsView(
             label = { Text(stringResource(R.string.api_password)) },
             imageVector = Icons.Filled.Save,
             initialValue = uiState.password,
+            mayBeEmpty = true,
             clearOnSubmit = false,
             onSubmit = settingsViewModel::updatePassword
         )

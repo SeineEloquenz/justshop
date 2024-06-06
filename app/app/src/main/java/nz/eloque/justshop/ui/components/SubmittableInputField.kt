@@ -27,13 +27,17 @@ fun SubmittableTextField(
     onValueChange: (String) -> Unit = {},
     inputValidator: (String) -> Boolean = { true },
     initialValue: String = "",
+    mayBeEmpty: Boolean = false,
     clearOnSubmit: Boolean = true,
     contentDescription: String = "",
 ) {
     val msgInput = rememberSaveable { mutableStateOf(initialValue) }
 
     val onlyWhitespace: () -> Boolean = { msgInput.value.trim() == "" }
-    val validInput: () -> Boolean = { !onlyWhitespace() && inputValidator.invoke(msgInput.value) }
+    val validInput: () -> Boolean = {
+        mayBeEmpty && msgInput.value == ""
+                || !onlyWhitespace() && inputValidator.invoke(msgInput.value)
+    }
 
     val isError = rememberSaveable { mutableStateOf( !validInput() ) }
     BoxWithConstraints(
