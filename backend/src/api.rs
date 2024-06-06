@@ -93,7 +93,7 @@ pub async fn user_connected(ws: WebSocket, users: Users) {
     let users2 = users.clone();
 
     while let Some(result) = user_ws_rx.next().await {
-        let msg = match result {
+        let _ = match result {
             Ok(msg) => msg,
             Err(e) => {
                 error!("websocket error(uid={}): {}", my_id, e);
