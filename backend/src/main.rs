@@ -47,7 +47,7 @@ async fn main() {
     let update_item_route = warp::path!("v1" / "update")
         .and(warp::post())
         .and(warp::body::json())
-        .and(warp::any().map(move || Arc::clone(&post_list)))
+        .and(warp::any().map(move || post_list.clone()))
         .and(warp::any().map(move || post_users.clone()))
         .and_then(api::update_shopping_item);
 
@@ -55,7 +55,7 @@ async fn main() {
     let delete_checked_users = users.clone();
     let delete_checked_route = warp::path!("v1" / "delete-checked")
         .and(warp::delete())
-        .and(warp::any().map(move || Arc::clone(&delete_checked_list)))
+        .and(warp::any().map(move || delete_checked_list.clone()))
         .and(warp::any().map(move || delete_checked_users.clone()))
         .and_then(api::delete_checked);
 
@@ -63,7 +63,7 @@ async fn main() {
     let delete_all_users = users.clone();
     let delete_all_route = warp::path!("v1" / "delete-all")
         .and(warp::delete())
-        .and(warp::any().map(move || Arc::clone(&delete_all_list)))
+        .and(warp::any().map(move || delete_all_list.clone()))
         .and(warp::any().map(move || delete_all_users.clone()))
         .and_then(api::delete_all);
 
