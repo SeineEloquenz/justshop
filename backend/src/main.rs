@@ -29,12 +29,14 @@ async fn main() {
 
     let users = api::Users::default();
 
+    let ws_shopping_list = shopping_list.clone();
     let ws_users = users.clone();
     let websocket = warp::path!("v1" / "ws")
         .and(warp::ws())
+        .and(warp::any().map(move || ws_shopping_list.clone()))
         .and(warp::any().map(move || ws_users.clone()))
-        .map(|ws: warp::ws::Ws, users| {
-            ws.on_upgrade(move |socket| api::user_connected(socket, users))
+        .map(|ws: warp::ws::Ws, shopping_list, users| {
+            ws.on_upgrade(move |socket| api::user_connected(socket, shopping_list, users))
         });
 
     let post_list = shopping_list.clone();

@@ -63,7 +63,7 @@ pub async fn delete_all(shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>,
 }
 
 // Websocket handler
-pub async fn user_connected(ws: WebSocket, users: Users) {
+pub async fn user_connected(ws: WebSocket, shopping_list: Arc<RwLock<HashMap<Uuid, ShoppingItem>>>, users: Users) {
     // Use a counter to assign a new unique ID for this user.
     let my_id = NEXT_USER_ID.fetch_add(1, Ordering::Relaxed);
 
@@ -84,12 +84,7 @@ pub async fn user_connected(ws: WebSocket, users: Users) {
 
     // Save the sender in our list of connected users.
     users.write().unwrap().insert(my_id, tx);
-
-    // Return a `Future` that is basically a state machine managing
-    // this specific user's connection.
-
-    // Make an extra clone to give to our disconnection handler...
-    let users2 = users.clone();
+    update(shopping_list, users.clone());
 
     while let Some(result) = user_ws_rx.next().await {
         let _ = match result {
@@ -101,10 +96,10 @@ pub async fn user_connected(ws: WebSocket, users: Users) {
         };
     }
 
-    user_disconnected(my_id, &users2).await;
+    user_disconnected(my_id, users.clone()).await;
 }
 
-pub async fn user_disconnected(my_id: usize, users: &Users) {
+pub async fn user_disconnected(my_id: usize, users: Users) {
     info!("subscriber disconnected: {}", my_id);
     users.write().unwrap().remove(&my_id);
 }
