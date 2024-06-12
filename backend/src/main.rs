@@ -3,6 +3,7 @@ pub mod shopping_list;
 pub mod state;
 
 use clap::Parser;
+use std::convert::Infallible;
 use std::sync::{Arc, RwLock};
 use std::path::PathBuf;
 use tokio::time::Duration;
@@ -29,39 +30,31 @@ async fn main() {
 
     let users = api::Users::default();
 
-    let ws_shopping_list = shopping_list.clone();
-    let ws_users = users.clone();
     let websocket = warp::path!("v1" / "ws")
         .and(warp::ws())
-        .and(warp::any().map(move || ws_shopping_list.clone()))
-        .and(warp::any().map(move || ws_users.clone()))
+        .and(with(shopping_list.clone()))
+        .and(with(users.clone()))
         .map(|ws: warp::ws::Ws, shopping_list, users| {
             ws.on_upgrade(move |socket| api::user_connected(socket, shopping_list, users))
         });
 
-    let post_list = shopping_list.clone();
-    let post_users = users.clone();
     let update_item_route = warp::path!("v1" / "update")
         .and(warp::post())
         .and(warp::body::json())
-        .and(warp::any().map(move || post_list.clone()))
-        .and(warp::any().map(move || post_users.clone()))
+        .and(with(shopping_list.clone()))
+        .and(with(users.clone()))
         .and_then(api::update_shopping_item);
 
-    let delete_checked_list = shopping_list.clone();
-    let delete_checked_users = users.clone();
     let delete_checked_route = warp::path!("v1" / "delete-checked")
         .and(warp::delete())
-        .and(warp::any().map(move || delete_checked_list.clone()))
-        .and(warp::any().map(move || delete_checked_users.clone()))
+        .and(with(shopping_list.clone()))
+        .and(with(users.clone()))
         .and_then(api::delete_checked);
 
-    let delete_all_list = shopping_list.clone();
-    let delete_all_users = users.clone();
     let delete_all_route = warp::path!("v1" / "delete-all")
         .and(warp::delete())
-        .and(warp::any().map(move || delete_all_list.clone()))
-        .and(warp::any().map(move || delete_all_users.clone()))
+        .and(with(shopping_list.clone()))
+        .and(with(users.clone()))
         .and_then(api::delete_all);
 
     // Combine routes
@@ -94,4 +87,11 @@ async fn main() {
 
     // Start server
     warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
+}
+
+fn with<T: Clone + Send + Sync>(
+    value: T,
+) -> impl Filter<Extract = (T,), Error = Infallible> + Clone {
+    let value = value.clone();
+    warp::any().map(move || value.clone())
 }
