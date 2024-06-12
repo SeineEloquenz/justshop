@@ -92,6 +92,5 @@ async fn main() {
 fn with<T: Clone + Send + Sync>(
     value: T,
 ) -> impl Filter<Extract = (T,), Error = Infallible> + Clone {
-    let value = value.clone();
     warp::any().map(move || value.clone())
 }
