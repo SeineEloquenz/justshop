@@ -5,7 +5,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.model.ConnectionStateObserver
-import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -49,10 +48,6 @@ class ApiWebSocketListener(
         }
         Log.i(TAG, "Connection Closed: $code. Reason: $reason")
         onConnectionLoss.invoke()
-    }
-
-    private fun scheduleReconnect() {
-
     }
 
     companion object {
