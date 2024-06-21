@@ -20,10 +20,10 @@ class ShoppingListManager(
     }
 
     fun handleApiUpdate(listUpdate: Map<UUID, ShoppingItem>) {
+        val items = listUpdate.values
         CoroutineScope(Dispatchers.IO).launch {
-            listUpdate.forEach { (_, value) ->
-                shoppingItemRepository.insert(value)
-            }
+            shoppingItemRepository.deleteAllExcept(items)
+            shoppingItemRepository.insert(items)
             notifyObservers()
         }
     }
@@ -42,12 +42,10 @@ class ShoppingListManager(
         observers.forEach { it.notifyOfChange() }
     }
     suspend fun deleteAll() {
-        shoppingItemRepository.deleteAll()
         shoppingListApi.deleteAll()
     }
 
     suspend fun deleteChecked() {
-        shoppingItemRepository.deleteChecked()
         shoppingListApi.deleteChecked()
     }
 

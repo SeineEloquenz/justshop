@@ -7,6 +7,10 @@ interface ShoppingItemRepository {
 
     suspend fun insert(shoppingItem: ShoppingItem)
 
+    suspend fun insert(shoppingItems: Collection<ShoppingItem>)
+
+    suspend fun deleteAllExcept(shoppingItems: Collection<ShoppingItem>)
+
     suspend fun deleteAll()
     suspend fun deleteChecked()
 }
