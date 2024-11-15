@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "nz.eloque.justshop"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "nz.eloque.justshop"
         minSdk = 28
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 7
         versionName = "0.2.2"
 
