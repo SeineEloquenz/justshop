@@ -29,7 +29,7 @@ jobs:
         uses: gradle/actions/setup-gradle@v4
       - name: Assemble Release
         working-directory: ./app
-        run: ./gradlew assembleGithubRelease
+        run: ./gradlew assembleRelease
         env:
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
           SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
@@ -38,7 +38,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: apk
-          path: app/app/build/outputs/apk/githubRelease
+          path: app/app/build/outputs/apk/release
 
   release:
     name: Release Apk
@@ -54,4 +54,4 @@ jobs:
         id: create-release
         uses: softprops/action-gh-release@v2
         with:
-          files: apk/app-githubRelease.apk
+          files: apk/app-release.apk

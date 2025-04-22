@@ -5,6 +5,13 @@ plugins {
 }
 
 android {
+    dependenciesInfo {
+        // Disables dependency metadata when building APKs.
+        includeInApk = false
+        // Disables dependency metadata when building Android App Bundles.
+        includeInBundle = false
+    }
+
     namespace = "nz.eloque.justshop"
     compileSdk = 35
 
@@ -21,7 +28,7 @@ android {
         }
     }
     signingConfigs {
-        create("github") {
+        create("release") {
             storeFile = file(System.getProperty("user.home") + "/work/_temp/keystore.jks")
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyPassword = System.getenv("SIGNING_KEY_PASSWORD")
@@ -30,13 +37,13 @@ android {
     }
 
     buildTypes {
-        create("githubRelease") {
+        release {
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs["github"]
+            signingConfig = signingConfigs["release"]
         }
         debug {
             applicationIdSuffix = ".dev"
