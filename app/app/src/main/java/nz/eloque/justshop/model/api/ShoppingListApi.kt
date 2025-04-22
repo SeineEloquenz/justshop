@@ -1,6 +1,11 @@
 package nz.eloque.justshop.model.api
 
+import android.content.SharedPreferences
 import android.util.Log
+import jakarta.inject.Inject
+import jakarta.inject.Provider
+import nz.eloque.justshop.Preferences
+import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import okhttp3.Credentials
 import okhttp3.Interceptor
@@ -12,7 +17,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import org.json.JSONArray
 import org.json.JSONObject
-import java.util.UUID
 
 class BasicAuthInterceptor(
     private val usernameProvider: () -> String,
@@ -36,12 +40,13 @@ class BasicAuthInterceptor(
     }
 }
 
-class ShoppingListApi(
-    serverUrlProvider: () -> String,
-    usernameProvider: () -> String,
-    passwordProvider: () -> String,
-    private val onListUpdate: (Map<UUID, ShoppingItem>) -> Unit,
+class ShoppingListApi @Inject constructor(
+    private val shoppingListManager: Provider<ShoppingListManager>,
+    prefs: SharedPreferences,
 ) {
+    private val serverUrlProvider: () -> String = { prefs.getString(Preferences.SERVER_URL, "https://justshop.eloque.nz")!! }
+    private val usernameProvider: () -> String =  { prefs.getString(Preferences.USER_NAME, "")!! }
+    private val passwordProvider: () -> String = { prefs.getString(Preferences.PASSWORD, "")!! }
     private val apiVersion = "v1"
 
     private val baseUrlProvider = {
@@ -58,7 +63,7 @@ class ShoppingListApi(
         val websocket = client
             .newWebSocket(
                 Request.Builder().url("${baseUrlProvider.invoke()}/ws").build(),
-                ApiWebSocketListener(onListUpdate) {
+                ApiWebSocketListener(shoppingListManager.get()::handleApiUpdate) {
                     Thread.sleep(1000)
                     this.connect()
                 }
@@ -138,5 +143,8 @@ class ShoppingListApi(
             action.invoke(element)
             i++
         }
+    }
+
+    fun ensureCreation() {
     }
 }

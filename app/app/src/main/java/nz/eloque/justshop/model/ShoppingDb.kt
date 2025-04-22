@@ -1,22 +1,24 @@
-package nz.eloque.justshop.model.shopping_list
+package nz.eloque.justshop.model
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import nz.eloque.justshop.model.shopping_list.ShoppingItem
+import nz.eloque.justshop.model.shopping_list.ShoppingItemDao
 
 @Database(entities = [ShoppingItem::class], version = 1, exportSchema = false)
-abstract class ShoppingItemDb : RoomDatabase() {
+abstract class ShoppingDb : RoomDatabase() {
 
-    abstract fun dao(): ShoppingItemDao
+    abstract fun shoppingItemDao(): ShoppingItemDao
 
     companion object {
         @Volatile
-        private var Instance: ShoppingItemDb? = null
+        private var Instance: ShoppingDb? = null
 
-        fun getDb(context: Context): ShoppingItemDb {
+        fun getDb(context: Context): ShoppingDb {
             return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, ShoppingItemDb::class.java, "shopping_item_db")
+                Room.databaseBuilder(context, ShoppingDb::class.java, "shopping_item_db")
                     .fallbackToDestructiveMigration()
                     .build()
                     .also { Instance = it }

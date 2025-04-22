@@ -1,5 +1,6 @@
 package nz.eloque.justshop.model
 
+import jakarta.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -9,15 +10,11 @@ import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
 import java.util.UUID
 
-class ShoppingListManager(
+class ShoppingListManager @Inject constructor(
     private val shoppingItemRepository: ShoppingItemRepository,
     private val shoppingListApi: ShoppingListApi,
 ): EmberObservable {
     private val observers = HashSet<EmberObserver>()
-
-    init {
-        shoppingListApi.connect()
-    }
 
     fun handleApiUpdate(listUpdate: Map<UUID, ShoppingItem>) {
         val items = listUpdate.values

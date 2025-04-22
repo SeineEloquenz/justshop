@@ -3,6 +3,7 @@ package nz.eloque.justshop.ui.shopping_list
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -11,6 +12,7 @@ import kotlinx.coroutines.launch
 import nz.eloque.justshop.model.EmberObserver
 import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
+import javax.inject.Inject
 
 
 data class ShoppingItem(
@@ -24,7 +26,8 @@ data class ShoppingListUiState(
     val items: List<ShoppingItem> = ArrayList()
 )
 
-class ShoppingListViewModel(
+@HiltViewModel
+class ShoppingListViewModel @Inject constructor(
     private val shoppingListManager: ShoppingListManager,
 ) : ViewModel(), EmberObserver {
 

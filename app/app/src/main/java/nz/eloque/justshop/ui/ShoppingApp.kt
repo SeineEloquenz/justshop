@@ -35,8 +35,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -46,9 +46,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import nz.eloque.justshop.MainActivity
 import nz.eloque.justshop.R
-import nz.eloque.justshop.app.AppViewModelProvider
 import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.ui.about.AboutView
 import nz.eloque.justshop.ui.settings.SettingsView
@@ -64,12 +62,11 @@ sealed class Screen(val route: String, val icon: ImageVector, @StringRes val res
 
 @Composable
 fun ShoppingList(
-    activity: MainActivity,
     navController: NavHostController,
     modifier: Modifier = Modifier
 ) {
-    val shoppingListViewModel: ShoppingListViewModel = viewModel(factory = AppViewModelProvider.Factory)
-    val settingsViewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    val shoppingListViewModel: ShoppingListViewModel = hiltViewModel()
+    val settingsViewModel: SettingsViewModel = hiltViewModel()
     val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsState(false)
 
     Surface(
