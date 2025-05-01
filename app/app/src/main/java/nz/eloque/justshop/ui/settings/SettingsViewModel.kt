@@ -2,6 +2,7 @@ package nz.eloque.justshop.ui.settings
 
 import android.content.SharedPreferences
 import android.util.Log
+import androidx.core.content.edit
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -46,17 +47,17 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun updateServerUrl(url: String) {
-        prefs.edit().putString(Preferences.SERVER_URL, url).apply()
+        prefs.edit { putString(Preferences.SERVER_URL, url) }
         notifyOfChange()
     }
 
     fun updateUserName(userName: String) {
-        prefs.edit().putString(Preferences.USER_NAME, userName).apply()
+        prefs.edit { putString(Preferences.USER_NAME, userName) }
         notifyOfChange()
     }
 
     fun updatePassword(password: String) {
-        prefs.edit().putString(Preferences.PASSWORD, password).apply()
+        prefs.edit { putString(Preferences.PASSWORD, password) }
         notifyOfChange()
     }
 
