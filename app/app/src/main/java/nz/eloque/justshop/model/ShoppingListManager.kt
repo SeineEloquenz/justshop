@@ -13,15 +13,13 @@ import java.util.UUID
 class ShoppingListManager @Inject constructor(
     private val shoppingItemRepository: ShoppingItemRepository,
     private val shoppingListApi: ShoppingListApi,
-): EmberObservable {
-    private val observers = HashSet<EmberObserver>()
+) {
 
     fun handleApiUpdate(listUpdate: Map<UUID, ShoppingItem>) {
         val items = listUpdate.values
         CoroutineScope(Dispatchers.IO).launch {
             shoppingItemRepository.deleteAllExcept(items)
             shoppingItemRepository.insert(items)
-            notifyObservers()
         }
     }
 
@@ -31,13 +29,6 @@ class ShoppingListManager @Inject constructor(
 
     fun messages(): Flow<List<ShoppingItem>> = shoppingItemRepository.all()
 
-    override fun register(observer: EmberObserver) {
-        observers.add(observer)
-    }
-
-    override fun notifyObservers() {
-        observers.forEach { it.notifyOfChange() }
-    }
     suspend fun deleteAll() {
         shoppingListApi.deleteAll()
     }

@@ -43,14 +43,14 @@ fun ShoppingListView(
     shoppingListViewModel: ShoppingListViewModel,
     modifier: Modifier = Modifier
 ) {
-    val shoppingListUiState by shoppingListViewModel.uiState.collectAsState()
-    val sortedList = shoppingListUiState.items.sortedBy { it.timestamp }
+    val shoppingListUiState by shoppingListViewModel.items.collectAsState()
+    val sortedList = shoppingListUiState.sortedBy { it.timestamp }
 
     Column(
         modifier = modifier.fillMaxHeight(),
         verticalArrangement = Arrangement.Bottom
     ) {
-        val listState = rememberLazyListState(initialFirstVisibleItemIndex = shoppingListUiState.items.size)
+        val listState = rememberLazyListState(initialFirstVisibleItemIndex = shoppingListUiState.size)
         LazyColumn(
             state = listState,
             modifier = modifier
@@ -85,7 +85,7 @@ fun ShoppingListView(
             initialValue = "",
             onSubmit = {
                 coroutineScope.launch {
-                    listState.animateScrollToItem(shoppingListUiState.items.size)
+                    listState.animateScrollToItem(shoppingListUiState.size)
                 }
                 shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
                     shoppingListViewModel.updateItem(ShoppingItem(UUID.randomUUID(), it, checked = false))
