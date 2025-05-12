@@ -1,4 +1,5 @@
 { rustPlatform
+, rust
 , openssl
 , ... }:
 
@@ -12,4 +13,6 @@ rustPlatform.buildRustPackage rec {
   cargoLock = {
     lockFile = ./Cargo.lock;
   };
+
+  RUST_SRC_PATH = "${rust.packages.stable.rustPlatform.rustLibSrc}";
 }
