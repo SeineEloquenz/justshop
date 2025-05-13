@@ -44,7 +44,7 @@ class ApiWebSocketListener(
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            ConnectionStateObserver.updateConnectionState(true)
+            ConnectionStateObserver.updateConnectionState(false)
         }
         Log.i(TAG, "Connection Closed: $code. Reason: $reason")
         onConnectionLoss.invoke()
