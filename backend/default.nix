@@ -1,12 +1,11 @@
 { rustPlatform
 , rust
-, openssl
 , ... }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage {
 
   pname = "justshop-backend";
-  version = "0.1.0";
+  version = "0.3.0";
 
   src = ./.;
 
