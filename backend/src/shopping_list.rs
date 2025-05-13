@@ -10,5 +10,7 @@ pub struct ShoppingItem {
     timestamp: i64,
 }
 
+pub type ShoppingListContent = HashMap<String, HashMap<Uuid, ShoppingItem>>;
+
 #[derive(Debug, Serialize, Deserialize)]
-pub struct ShoppingList(HashMap<Uuid, ShoppingItem>);
+pub struct ShoppingList(ShoppingListContent);

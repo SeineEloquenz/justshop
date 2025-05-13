@@ -3,6 +3,7 @@ pub mod shopping_list;
 pub mod state;
 
 use clap::Parser;
+use std::collections::HashMap;
 use std::convert::Infallible;
 use std::sync::{Arc, RwLock};
 use std::path::PathBuf;
@@ -30,31 +31,36 @@ async fn main() {
 
     let users = api::Users::default();
 
-    let websocket = warp::path!("v1" / "ws")
+    let websocket = warp::path!("v2" / "ws")
         .and(warp::ws())
         .and(with(shopping_list.clone()))
         .and(with(users.clone()))
-        .map(|ws: warp::ws::Ws, shopping_list, users| {
-            ws.on_upgrade(move |socket| api::user_connected(socket, shopping_list, users))
+        .and(warp::query::<std::collections::HashMap<String, String>>())
+        .map(|ws: warp::ws::Ws, shopping_list, users, query: HashMap<String, String>| {
+            let list_name = query.get("list_name").cloned().unwrap_or_else(|| "junkyard".into());
+            ws.on_upgrade(move |socket| api::user_connected(socket, shopping_list, users, list_name))
         });
 
-    let update_item_route = warp::path!("v1" / "update")
+    let update_item_route = warp::path!("v2" / "update")
         .and(warp::post())
         .and(warp::body::json())
         .and(with(shopping_list.clone()))
         .and(with(users.clone()))
+        .and(warp::query::<HashMap<String, String>>())
         .and_then(api::update_shopping_item);
 
-    let delete_checked_route = warp::path!("v1" / "delete-checked")
+    let delete_checked_route = warp::path!("v2" / "delete-checked")
         .and(warp::delete())
         .and(with(shopping_list.clone()))
         .and(with(users.clone()))
+        .and(warp::query::<HashMap<String, String>>())
         .and_then(api::delete_checked);
 
-    let delete_all_route = warp::path!("v1" / "delete-all")
+    let delete_all_route = warp::path!("v2" / "delete-all")
         .and(warp::delete())
         .and(with(shopping_list.clone()))
         .and(with(users.clone()))
+        .and(warp::query::<HashMap<String, String>>())
         .and_then(api::delete_all);
 
     // Combine routes

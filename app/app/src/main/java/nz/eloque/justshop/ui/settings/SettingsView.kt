@@ -37,6 +37,13 @@ fun SettingsView(
             onSubmit = settingsViewModel::updateServerUrl
         )
         SubmittableTextField(
+            label = { Text(stringResource(R.string.list_name)) },
+            imageVector = Icons.Filled.Save,
+            initialValue = uiState.listName,
+            clearOnSubmit = false,
+            onSubmit = settingsViewModel::updateListName
+        )
+        SubmittableTextField(
             label = { Text(stringResource(R.string.api_user_name)) },
             imageVector = Icons.Filled.Save,
             initialValue = uiState.userName,

@@ -13,15 +13,18 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.Preferences
 import nz.eloque.justshop.model.EmberObserver
+import nz.eloque.justshop.model.api.ShoppingListApi
 
 data class SettingsUiState(
     val serverUrl: String = "",
+    val listName: String = "",
     val userName: String = "",
     val password: String = ""
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    private val api: ShoppingListApi,
     private val prefs: SharedPreferences,
 ) : ViewModel(), EmberObserver {
 
@@ -38,16 +41,23 @@ class SettingsViewModel @Inject constructor(
     override fun notifyOfChange() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(
+                listName = prefs.getString(Preferences.LIST_NAME, "")!!,
                 serverUrl = prefs.getString(Preferences.SERVER_URL, "")!!,
                 userName = prefs.getString(Preferences.USER_NAME, "")!!,
                 password = prefs.getString(Preferences.PASSWORD, "")!!,
             )
+            api.closeSocket()
             Log.d(TAG, "Updated Settings!")
         }
     }
 
     fun updateServerUrl(url: String) {
         prefs.edit { putString(Preferences.SERVER_URL, url) }
+        notifyOfChange()
+    }
+
+    fun updateListName(listName: String) {
+        prefs.edit { putString(Preferences.LIST_NAME, listName) }
         notifyOfChange()
     }
 

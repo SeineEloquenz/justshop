@@ -4,10 +4,16 @@ import android.content.SharedPreferences
 import android.util.Log
 import jakarta.inject.Inject
 import jakarta.inject.Provider
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import nz.eloque.justshop.Preferences
 import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import okhttp3.Credentials
+import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
@@ -15,6 +21,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
+import okhttp3.WebSocket
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -42,12 +49,18 @@ class BasicAuthInterceptor(
 
 class ShoppingListApi @Inject constructor(
     private val shoppingListManager: Provider<ShoppingListManager>,
-    prefs: SharedPreferences,
+    private val prefs: SharedPreferences,
 ) {
+    companion object {
+        private const val TAG = "ShoppingListApi"
+
+        private var websocket: WebSocket? = null
+    }
+
     private val serverUrlProvider: () -> String = { prefs.getString(Preferences.SERVER_URL, "https://justshop.eloque.nz")!! }
     private val usernameProvider: () -> String =  { prefs.getString(Preferences.USER_NAME, "")!! }
     private val passwordProvider: () -> String = { prefs.getString(Preferences.PASSWORD, "")!! }
-    private val apiVersion = "v1"
+    private val apiVersion = "v2"
 
     private val baseUrlProvider = {
         serverUrlProvider.invoke() + "/" + apiVersion
@@ -60,14 +73,32 @@ class ShoppingListApi @Inject constructor(
 
     fun connect() {
         Log.i(TAG, "Starting WebSocket Connection")
-        val websocket = client
-            .newWebSocket(
-                Request.Builder().url("${baseUrlProvider.invoke()}/ws").build(),
-                ApiWebSocketListener(shoppingListManager.get()::handleApiUpdate) {
-                    Thread.sleep(1000)
-                    this.connect()
-                }
-            )
+        openSocket()
+        CoroutineScope(Dispatchers.IO).launch {
+            while (true) {
+                delay(1000)
+                openSocket()
+            }
+        }
+    }
+
+    fun closeSocket() {
+        Log.d(TAG, "Socket closed")
+        websocket?.cancel()
+        websocket = null
+    }
+
+    private fun openSocket() {
+        if (websocket == null) {
+            Log.d(TAG, "Socket opened")
+            websocket = client
+                .newWebSocket(
+                    Request.Builder().url(toApiUrl("${baseUrlProvider.invoke()}/ws")).build(),
+                    ApiWebSocketListener(shoppingListManager.get()::handleApiUpdate) {
+                        closeSocket()
+                    }
+                )
+        }
     }
 
     suspend fun deleteChecked() {
@@ -108,7 +139,7 @@ class ShoppingListApi @Inject constructor(
     private suspend fun post(url: String, json: String): Response {
         val body: RequestBody = json.toRequestBody(mediaType)
         val request: Request = Request.Builder()
-            .url(url)
+            .url(toApiUrl(url))
             .post(body)
             .build()
         return client.newCall(request).execute()
@@ -117,7 +148,7 @@ class ShoppingListApi @Inject constructor(
     @Suppress("RedundantSuspendModifier")
     private suspend fun delete(url: String): Response {
         val request: Request = Request.Builder()
-            .url(url)
+            .url(toApiUrl(url))
             .delete()
             .build()
         return client.newCall(request).execute()
@@ -126,14 +157,10 @@ class ShoppingListApi @Inject constructor(
     @Suppress("RedundantSuspendModifier")
     private suspend fun get(url: String): Response {
         val request: Request = Request.Builder()
-            .url(url)
+            .url(toApiUrl(url))
             .get()
             .build()
         return client.newCall(request).execute()
-    }
-
-    companion object {
-        private const val TAG = "ShoppingListApi"
     }
 
     fun JSONArray.forEach(action: (JSONObject) -> Unit) {
@@ -146,5 +173,12 @@ class ShoppingListApi @Inject constructor(
     }
 
     fun ensureCreation() {
+    }
+
+    fun toApiUrl(url: String): HttpUrl {
+        return url.toHttpUrl()
+            .newBuilder()
+            .addQueryParameter("list_name", prefs.getString(Preferences.LIST_NAME, "junkyard"))
+            .build()
     }
 }
