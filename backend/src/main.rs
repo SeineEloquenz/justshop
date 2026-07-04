@@ -49,7 +49,7 @@ async fn main() {
     let cli = Cli::parse();
     let state_path = cli.state_file;
 
-    let shopping_list = state::load_state(&state_path).expect("Failed to load state file.");
+    let shopping_list = state::load_state(&state_path).await.expect("Failed to load state file.");
     let shopping_list = Arc::new(RwLock::new(shopping_list));
 
     let app_state = api::AppState {
