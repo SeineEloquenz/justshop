@@ -1,9 +1,11 @@
 use clap::Parser;
-use std::sync::{Arc, RwLock};
 use std::path::PathBuf;
-use tokio::time::Duration;
-use tracing::info;
+use std::sync::{Arc, RwLock};
+use tokio::signal::unix::{signal, Signal, SignalKind};
+use tokio::time::{interval, Duration};
+use tracing::{error, info};
 
+use justshop_backend::shopping_list::ShoppingListContent;
 use justshop_backend::{api, state, app};
 
 #[derive(Parser, Debug, Clone)]
@@ -12,16 +14,32 @@ struct Cli {
     state_file: PathBuf,
 }
 
-async fn shutdown_signal() {
-    use tokio::signal::unix::{signal, SignalKind};
+async fn persistence_task(
+    state_path: PathBuf,
+    shopping_list: Arc<RwLock<ShoppingListContent>>,
+    mut sigint: Signal,
+    mut sigterm: Signal,
+) {
+    let mut checkpoint = interval(Duration::from_secs(300));
+    checkpoint.tick().await; // the first tick fires immediately; skip the redundant startup save
 
-    let mut sigint = signal(SignalKind::interrupt()).expect("Failed to install SIGINT handler");
-    let mut sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
-
-    tokio::select! {
-        _ = sigint.recv() => info!("Received SIGINT."),
-        _ = sigterm.recv() => info!("Received SIGTERM."),
+    loop {
+        tokio::select! {
+            _ = checkpoint.tick() => {
+                if let Err(e) = state::save_state(&state_path, &shopping_list).await {
+                    error!("Periodic save failed: {e}");
+                }
+            }
+            _ = sigint.recv() => break,
+            _ = sigterm.recv() => break,
+        }
     }
+
+    info!("Received signal, saving state and shutting down.");
+    state::save_state(&state_path, &shopping_list)
+        .await
+        .expect("Failed to save state on shutdown");
+    std::process::exit(0);
 }
 
 #[tokio::main]
@@ -29,41 +47,20 @@ async fn main() {
     tracing_subscriber::fmt().init();
 
     let cli = Cli::parse();
-
     let state_path = cli.state_file;
+
     let shopping_list = state::load_state(&state_path).expect("Failed to load state file.");
     let shopping_list = Arc::new(RwLock::new(shopping_list));
 
-    let users = api::Users::default();
-
     let app_state = api::AppState {
         shopping_list: shopping_list.clone(),
-        users: users.clone(),
+        users: api::Users::default(),
     };
 
-    {
-        let state_path = state_path.clone();
-        let shopping_list = shopping_list.clone();
-        tokio::spawn(async move {
-            shutdown_signal().await;
-            info!("Received signal, stopping server.");
-            state::save_state(&state_path, shopping_list.clone()).await.expect("Failed saving data to state file");
-            std::process::exit(0);
-        });
-    }
+    let sigint = signal(SignalKind::interrupt()).expect("Failed to install SIGINT handler");
+    let sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
+    tokio::spawn(persistence_task(state_path, shopping_list, sigint, sigterm));
 
-    {
-        let state_path = state_path.clone();
-        let shopping_list = shopping_list.clone();
-        tokio::spawn(async move {
-            loop {
-                state::save_state(&state_path, shopping_list.clone()).await.expect("Failed saving data to state file");
-                tokio::time::sleep(Duration::from_secs(300)).await;
-            }
-        });
-    }
-
-    // Start server
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3030")
         .await
         .expect("Failed to bind to address");
