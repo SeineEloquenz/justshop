@@ -1,15 +1,18 @@
 { justshop }:
 
-{ config
-, pkgs
-, lib
-, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
 
   cfg = config.services.justshop;
 
-in {
+in
+{
 
   options.services.justshop = with lib; {
     enable = mkOption {
@@ -31,6 +34,10 @@ in {
 
   config = lib.mkIf cfg.enable {
 
+    systemd.tmpfiles.rules = [
+      "d '${cfg.stateDir}' 0750 ${cfg.user} justshop - -"
+    ];
+
     systemd.services."justshop" = {
       description = "justshop | a simple shopping list synchronization server";
       after = [ "network.target" ];
@@ -50,6 +57,6 @@ in {
       group = "justshop";
     };
 
-    users.groups.justshop = {};
+    users.groups.justshop = { };
   };
 }
