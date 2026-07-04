@@ -12,6 +12,18 @@ struct Cli {
     state_file: PathBuf,
 }
 
+async fn shutdown_signal() {
+    use tokio::signal::unix::{signal, SignalKind};
+
+    let mut sigint = signal(SignalKind::interrupt()).expect("Failed to install SIGINT handler");
+    let mut sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
+
+    tokio::select! {
+        _ = sigint.recv() => info!("Received SIGINT."),
+        _ = sigterm.recv() => info!("Received SIGTERM."),
+    }
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::fmt().init();
@@ -33,9 +45,9 @@ async fn main() {
         let state_path = state_path.clone();
         let shopping_list = shopping_list.clone();
         tokio::spawn(async move {
-            tokio::signal::ctrl_c().await.unwrap();
+            shutdown_signal().await;
             info!("Received signal, stopping server.");
-            state::save_state(&state_path.clone(), shopping_list.clone()).await.expect("Failed saving data to state file");
+            state::save_state(&state_path, shopping_list.clone()).await.expect("Failed saving data to state file");
             std::process::exit(0);
         });
     }
