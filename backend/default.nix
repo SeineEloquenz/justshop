@@ -1,4 +1,5 @@
-{ rustPlatform
+{ clippy
+, rustPlatform
 , rust
 , ... }:
 
@@ -6,6 +7,10 @@ rustPlatform.buildRustPackage {
 
   pname = "justshop-backend";
   version = "0.3.0";
+
+  nativeBuildInputs = [
+    clippy
+  ];
 
   src = ./.;
 
