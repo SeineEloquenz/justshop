@@ -1,15 +1,10 @@
-pub mod api;
-pub mod shopping_list;
-pub mod state;
-
 use clap::Parser;
-use std::collections::HashMap;
-use std::convert::Infallible;
 use std::sync::{Arc, RwLock};
 use std::path::PathBuf;
 use tokio::time::Duration;
 use tracing::info;
-use warp::Filter;
+
+use justshop_backend::{api, state, app};
 
 #[derive(Parser, Debug, Clone)]
 struct Cli {
@@ -21,8 +16,6 @@ struct Cli {
 async fn main() {
     tracing_subscriber::fmt().init();
 
-    // Initialize empty shopping list
-
     let cli = Cli::parse();
 
     let state_path = cli.state_file;
@@ -31,43 +24,10 @@ async fn main() {
 
     let users = api::Users::default();
 
-    let websocket = warp::path!("v2" / "ws")
-        .and(warp::ws())
-        .and(with(shopping_list.clone()))
-        .and(with(users.clone()))
-        .and(warp::query::<std::collections::HashMap<String, String>>())
-        .map(|ws: warp::ws::Ws, shopping_list, users, query: HashMap<String, String>| {
-            let list_name = query.get("list_name").cloned().unwrap_or_else(|| "junkyard".into());
-            ws.on_upgrade(move |socket| api::user_connected(socket, shopping_list, users, list_name))
-        });
-
-    let update_item_route = warp::path!("v2" / "update")
-        .and(warp::post())
-        .and(warp::body::json())
-        .and(with(shopping_list.clone()))
-        .and(with(users.clone()))
-        .and(warp::query::<HashMap<String, String>>())
-        .and_then(api::update_shopping_item);
-
-    let delete_checked_route = warp::path!("v2" / "delete-checked")
-        .and(warp::delete())
-        .and(with(shopping_list.clone()))
-        .and(with(users.clone()))
-        .and(warp::query::<HashMap<String, String>>())
-        .and_then(api::delete_checked);
-
-    let delete_all_route = warp::path!("v2" / "delete-all")
-        .and(warp::delete())
-        .and(with(shopping_list.clone()))
-        .and(with(users.clone()))
-        .and(warp::query::<HashMap<String, String>>())
-        .and_then(api::delete_all);
-
-    // Combine routes
-    let routes = websocket
-        .or(update_item_route)
-        .or(delete_checked_route)
-        .or(delete_all_route);
+    let app_state = api::AppState {
+        shopping_list: shopping_list.clone(),
+        users: users.clone(),
+    };
 
     {
         let state_path = state_path.clone();
@@ -92,11 +52,8 @@ async fn main() {
     }
 
     // Start server
-    warp::serve(routes).run(([0, 0, 0, 0], 3030)).await;
-}
-
-fn with<T: Clone + Send + Sync>(
-    value: T,
-) -> impl Filter<Extract = (T,), Error = Infallible> + Clone {
-    warp::any().map(move || value.clone())
+    let listener = tokio::net::TcpListener::bind("0.0.0.0:3030")
+        .await
+        .expect("Failed to bind to address");
+    axum::serve(listener, app(app_state)).await.expect("Server error");
 }
