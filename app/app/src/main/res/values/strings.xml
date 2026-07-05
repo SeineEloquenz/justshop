@@ -19,4 +19,6 @@
     <string name="api_user_name">API Username</string>
     <string name="api_password">API Password</string>
     <string name="list_name">Shoppinglist name</string>
+    <string name="settings_section_server">Server</string>
+    <string name="settings_section_authentication">Authentication</string>
 </resources>

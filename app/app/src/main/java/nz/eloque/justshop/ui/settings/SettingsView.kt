@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import nz.eloque.compose_kit.components.Section
 import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
 
@@ -23,39 +24,50 @@ fun SettingsView(
 ) {
     val uiState by settingsViewModel.uiState.collectAsState()
 
-    Column(
-        modifier = modifier.padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
-    ) {
-        SubmittableTextField(
-            label = stringResource(R.string.server_url),
-            imageVector = Icons.Filled.Save,
-            initialValue = uiState.serverUrl,
-            clearOnSubmit = false,
-            inputValidator = URLUtil::isValidUrl,
-            onSubmit = settingsViewModel::updateServerUrl
-        )
-        SubmittableTextField(
-            label = stringResource(R.string.list_name),
-            imageVector = Icons.Filled.Save,
-            initialValue = uiState.listName,
-            clearOnSubmit = false,
-            onSubmit = settingsViewModel::updateListName
-        )
-        SubmittableTextField(
-            label = stringResource(R.string.api_user_name),
-            imageVector = Icons.Filled.Save,
-            initialValue = uiState.userName,
-            clearOnSubmit = false,
-            onSubmit = settingsViewModel::updateUserName
-        )
-        SubmittableTextField(
-            label = stringResource(R.string.api_password),
-            imageVector = Icons.Filled.Save,
-            initialValue = uiState.password,
-            clearOnSubmit = false,
-            hidden = true,
-            onSubmit = settingsViewModel::updatePassword
-        )
+    Column(modifier = modifier) {
+        Section(heading = stringResource(R.string.settings_section_server)) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                SubmittableTextField(
+                    label = stringResource(R.string.server_url),
+                    imageVector = Icons.Filled.Save,
+                    initialValue = uiState.serverUrl,
+                    clearOnSubmit = false,
+                    inputValidator = URLUtil::isValidUrl,
+                    onSubmit = settingsViewModel::updateServerUrl
+                )
+                SubmittableTextField(
+                    label = stringResource(R.string.list_name),
+                    imageVector = Icons.Filled.Save,
+                    initialValue = uiState.listName,
+                    clearOnSubmit = false,
+                    onSubmit = settingsViewModel::updateListName
+                )
+            }
+        }
+        Section(heading = stringResource(R.string.settings_section_authentication)) {
+            Column(
+                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                SubmittableTextField(
+                    label = stringResource(R.string.api_user_name),
+                    imageVector = Icons.Filled.Save,
+                    initialValue = uiState.userName,
+                    clearOnSubmit = false,
+                    onSubmit = settingsViewModel::updateUserName
+                )
+                SubmittableTextField(
+                    label = stringResource(R.string.api_password),
+                    imageVector = Icons.Filled.Save,
+                    initialValue = uiState.password,
+                    clearOnSubmit = false,
+                    hidden = true,
+                    onSubmit = settingsViewModel::updatePassword
+                )
+            }
+        }
     }
 }
