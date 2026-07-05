@@ -2,7 +2,7 @@
 accompanistPermissions = "0.37.3"
 activityCompose = "1.13.0"
 androidGradlePlugin = "9.2.1"
-composeBom = "2025.05.00"
+composeBom = "2026.06.01"
 espressoCore = "3.6.1"
 hiltAndroid = "2.56.2"
 hiltNavigationCompose = "1.2.0"
