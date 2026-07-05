@@ -4,10 +4,10 @@
 }:
 
 let
-  buildToolsVersion = "35.0.0";
+  buildToolsVersion = "37.0.0";
 
   buildToolsVersions = [ buildToolsVersion ];
-  platformVersions = [ "35" ];
+  platformVersions = [ "37" ];
 
   pkgs = import nixpkgs {
     inherit system;
@@ -48,6 +48,8 @@ in
       GRADLE_OPTS = "-Dorg.gradle.project.android.aapt2FromMavenOverride=${androidSdk.androidsdk}/libexec/android-sdk/build-tools/${buildToolsVersion}/aapt2";
 
       RUST_SRC_PATH = "${pkgs.rustPlatform.rustLibSrc}";
+
+      LOCAL_COMPOSE_KIT = "../../compose-kit";
     };
 
     shellHook = ''

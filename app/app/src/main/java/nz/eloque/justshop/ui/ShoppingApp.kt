@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -21,10 +19,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -46,6 +43,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import nz.eloque.compose_kit.scaffold.AppScaffold
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.ui.about.AboutView
@@ -60,6 +58,7 @@ sealed class Screen(val route: String, val icon: ImageVector, @StringRes val res
     data object About : Screen("about", Icons.Default.Info, R.string.about)
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingList(
     navController: NavHostController,
@@ -77,7 +76,6 @@ fun ShoppingList(
             startDestination = Screen.ShoppingList.route,
         ) {
             composable(Screen.ShoppingList.route) {
-                val listState = rememberLazyListState()
                 ShoppingListScaffold(
                     navController = navController,
                     title = stringResource(id = R.string.justshop),
@@ -93,7 +91,7 @@ fun ShoppingList(
                             )
                         }
                     }
-                ) {
+                ) { scrollBehavior ->
                     if (!connectionStateFlow.value) {
                         Box(modifier = modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -109,7 +107,8 @@ fun ShoppingList(
                         }
                     }
                     ShoppingListView(
-                        shoppingListViewModel
+                        shoppingListViewModel,
+                        scrollBehavior = scrollBehavior,
                     )
                 }
             }
@@ -154,7 +153,7 @@ fun ShoppingListScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     floatingActionButton: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
-    content: @Composable () -> Unit,
+    content: @Composable (scrollBehavior: TopAppBarScrollBehavior) -> Unit,
 ) {
     val items = listOf(
         Screen.ShoppingList,
@@ -163,20 +162,22 @@ fun ShoppingListScaffold(
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(title) },
-                navigationIcon = {
-                    if (toolWindow && showBack) {
-                        IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(imageVector = Icons.AutoMirrored.Default.ArrowBack, contentDescription = stringResource(R.string.back))
-                        }
-                    }
-                },
-                actions = actions
-            )
+
+    AppScaffold(
+        title = title,
+        modifier = modifier,
+        navigationIcon = {
+            if (toolWindow && showBack) {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                        contentDescription = stringResource(R.string.back)
+                    )
+                }
+            }
         },
+        actions = actions,
+        floatingActionButton = floatingActionButton,
         bottomBar = {
             if (!toolWindow) {
                 BottomAppBar {
@@ -198,15 +199,10 @@ fun ShoppingListScaffold(
                     }
                 }
             } else {
-                bottomBar.invoke()
+                bottomBar()
             }
         },
-        floatingActionButton = floatingActionButton
-    ) { innerPadding ->
-        Box(modifier = modifier
-            .padding(innerPadding)
-            .padding(10.dp)) {
-            content.invoke()
-        }
-    }
+        contentHorizontalPadding = 10.dp,
+        content = content,
+    )
 }

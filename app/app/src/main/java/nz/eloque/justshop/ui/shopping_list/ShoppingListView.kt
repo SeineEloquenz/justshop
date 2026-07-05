@@ -17,6 +17,7 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -26,6 +27,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -33,14 +35,16 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
-import nz.eloque.justshop.ui.components.SubmittableTextField
 import java.util.UUID
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingListView(
     shoppingListViewModel: ShoppingListViewModel,
+    scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
     val shoppingListUiState by shoppingListViewModel.items.collectAsState()
@@ -56,6 +60,7 @@ fun ShoppingListView(
             modifier = modifier
                 .fillMaxWidth()
                 .weight(9f)
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
             items(sortedList) { item ->
                 Row(
@@ -80,7 +85,7 @@ fun ShoppingListView(
         }
         val coroutineScope = rememberCoroutineScope()
         SubmittableTextField(
-            label = { Text(stringResource(R.string.item)) },
+            label = stringResource(R.string.item),
             imageVector = Icons.Filled.Done,
             initialValue = "",
             onSubmit = {
@@ -145,7 +150,7 @@ fun ShoppingItemCard(
                     modifier = Modifier.padding(10.dp)
                 ) {
                     SubmittableTextField(
-                        label = { Text(stringResource(R.string.item)) },
+                        label = stringResource(R.string.item),
                         initialValue = itemContent,
                         imageVector = Icons.Default.Done,
                         clearOnSubmit = false,

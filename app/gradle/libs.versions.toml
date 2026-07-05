@@ -3,13 +3,14 @@ accompanistPermissions = "0.37.3"
 activityCompose = "1.13.0"
 androidGradlePlugin = "9.2.1"
 composeBom = "2026.06.01"
+composeKit = "0.3.0"
 espressoCore = "3.7.0"
 hiltAndroid = "2.60"
 hiltNavigationCompose = "1.2.0"
 jetbrainsKotlinAndroid = "2.4.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
-ksp = "2.1.20-2.0.1"
+ksp = "2.3.9"
 ktx = "1.16.0"
 material = "1.12.0"
 navigationCompose = "2.9.8"
@@ -40,6 +41,7 @@ androidx-ui-test-junit4 = { module = "androidx.compose.ui:ui-test-junit4" }
 androidx-ui-test-manifest = { module = "androidx.compose.ui:ui-test-manifest" }
 androidx-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
 androidx-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
+compose-kit = { module = "nz.eloque.compose-kit:lib", version.ref = "composeKit" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltAndroid" }
 hilt-android-compiler = { module = "com.google.dagger:hilt-android-compiler", version.ref = "hiltAndroid" }
 junit = { module = "junit:junit", version.ref = "junit" }
@@ -51,6 +53,5 @@ android-application = { id = "com.android.application", version.ref = "androidGr
 android-library = { id = "com.android.library", version.ref = "androidGradlePlugin" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "hiltAndroid" }
-jetbrains-kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "jetbrainsKotlinAndroid" }
 jetbrains-kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "jetbrainsKotlinAndroid" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

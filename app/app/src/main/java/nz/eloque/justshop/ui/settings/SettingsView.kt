@@ -6,15 +6,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
-import nz.eloque.justshop.ui.components.SubmittableTextField
 
 
 @Composable
@@ -29,7 +28,7 @@ fun SettingsView(
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
         SubmittableTextField(
-            label = { Text(stringResource(R.string.server_url)) },
+            label = stringResource(R.string.server_url),
             imageVector = Icons.Filled.Save,
             initialValue = uiState.serverUrl,
             clearOnSubmit = false,
@@ -37,26 +36,25 @@ fun SettingsView(
             onSubmit = settingsViewModel::updateServerUrl
         )
         SubmittableTextField(
-            label = { Text(stringResource(R.string.list_name)) },
+            label = stringResource(R.string.list_name),
             imageVector = Icons.Filled.Save,
             initialValue = uiState.listName,
             clearOnSubmit = false,
             onSubmit = settingsViewModel::updateListName
         )
         SubmittableTextField(
-            label = { Text(stringResource(R.string.api_user_name)) },
+            label = stringResource(R.string.api_user_name),
             imageVector = Icons.Filled.Save,
             initialValue = uiState.userName,
-            mayBeEmpty = true,
             clearOnSubmit = false,
             onSubmit = settingsViewModel::updateUserName
         )
         SubmittableTextField(
-            label = { Text(stringResource(R.string.api_password)) },
+            label = stringResource(R.string.api_password),
             imageVector = Icons.Filled.Save,
             initialValue = uiState.password,
-            mayBeEmpty = true,
             clearOnSubmit = false,
+            hidden = true,
             onSubmit = settingsViewModel::updatePassword
         )
     }
