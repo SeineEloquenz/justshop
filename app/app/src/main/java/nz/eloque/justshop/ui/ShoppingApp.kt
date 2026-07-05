@@ -43,6 +43,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import nz.eloque.compose_kit.input.AbbreviatingText
 import nz.eloque.compose_kit.scaffold.AppScaffold
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.ConnectionStateObserver
@@ -164,7 +165,13 @@ fun ShoppingListScaffold(
     val currentDestination = navBackStackEntry?.destination
 
     AppScaffold(
-        title = title,
+        title = {
+            AbbreviatingText(
+                title,
+                style = MaterialTheme.typography.headlineMedium,
+                maxLines = 1,
+            )
+        },
         modifier = modifier,
         navigationIcon = {
             if (toolWindow && showBack) {
