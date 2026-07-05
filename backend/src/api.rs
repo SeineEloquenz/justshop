@@ -31,12 +31,22 @@ pub fn update(shopping_list: Arc<RwLock<ShoppingListContent>>, users: Users) {
     let users = users.read().unwrap();
     info!("Updating {} subscribers", users.len());
 
+    let shopping_list = shopping_list.read().unwrap();
+    let mut payloads: HashMap<&str, Option<String>> = HashMap::new();
+
     for (id, user) in users.iter() {
-        debug!("User {} has list {}", id, user.subscribed_list_name);
-        if let Some(list) = shopping_list.read().unwrap().get(&user.subscribed_list_name) {
-            let reply = serde_json::to_string_pretty(&list).unwrap();
-            let _ = user.sender.send(Message::Text(reply.into()));
-            debug!("Sent state update for list {}  to subscriber {}", user.subscribed_list_name, id);
+        let list_name = user.subscribed_list_name.as_str();
+        debug!("User {} has list {}", id, list_name);
+
+        let payload = payloads.entry(list_name).or_insert_with(|| {
+            shopping_list
+                .get(list_name)
+                .map(|list| serde_json::to_string_pretty(list).unwrap())
+        });
+
+        if let Some(payload) = payload {
+            let _ = user.sender.send(Message::Text(payload.clone().into()));
+            debug!("Sent state update for list {} to subscriber {}", list_name, id);
         }
     }
 }
