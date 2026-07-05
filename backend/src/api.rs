@@ -139,7 +139,7 @@ pub async fn handle_socket(
     // Save the sender in our list of connected users.
     users.write().unwrap().insert(my_id, User { subscribed_list_name: list_name.clone(), sender: tx });
     shopping_list.write().unwrap()
-        .entry(list_name.clone()).or_insert(HashMap::new());
+        .entry(list_name.clone()).or_default();
 
     update(shopping_list.clone(), users.clone());
 
