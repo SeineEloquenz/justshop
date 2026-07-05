@@ -1,6 +1,6 @@
 [versions]
 accompanistPermissions = "0.37.3"
-activityCompose = "1.10.1"
+activityCompose = "1.13.0"
 androidGradlePlugin = "8.10.0"
 composeBom = "2025.05.00"
 espressoCore = "3.6.1"
