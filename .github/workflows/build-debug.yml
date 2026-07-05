@@ -1,4 +1,4 @@
-name: Build Debug App
+name: Build Debug
 
 # Controls when the workflow will run
 on:
@@ -16,12 +16,12 @@ jobs:
   validation:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: gradle/wrapper-validation-action@v3
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Copy CI gradle.properties
         run: mkdir -p ~/.gradle ; cp .github/ci-gradle.properties ~/.gradle/gradle.properties
@@ -34,6 +34,12 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
 
-      - name: Build
+      - name: Test and Build
         working-directory: ./app
-        run: ./gradlew assembleDebug
+        run: ./gradlew testDebugUnitTest assembleDebug
+
+      - name: Upload Apk
+        uses: actions/upload-artifact@v7
+        with:
+          name: apk
+          path: app/app/build/outputs/apk/debug
