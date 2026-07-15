@@ -18,5 +18,5 @@ uuid = { version = "1.8.0", features = [ "serde" ]}
 
 [dev-dependencies]
 tower = { version = "0.5", features = ["util"] }
-tokio-tungstenite = "0.29"
+tokio-tungstenite = "0.30"
 uuid = { version = "1.8.0", features = ["v4"] }
