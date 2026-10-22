@@ -29,8 +29,8 @@ fun launchLogin(activityContext: Context, url: Uri) {
 class OidcLogin @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authStore: AuthStore,
+    private val client: OkHttpClient,
 ) {
-    private val client = OkHttpClient()
     private val jsonType = "application/json".toMediaType()
     private val redirectUri = "${context.packageName}://oauth"
 

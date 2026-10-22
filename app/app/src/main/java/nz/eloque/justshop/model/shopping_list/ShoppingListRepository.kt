@@ -3,11 +3,10 @@ package nz.eloque.justshop.model.shopping_list
 import jakarta.inject.Inject
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import nz.eloque.justshop.app.ApplicationScope
 import nz.eloque.justshop.model.api.ShoppingListApi
 
 /** Serves the list from Room and mirrors every list the server pushes into it. */
@@ -15,9 +14,8 @@ import nz.eloque.justshop.model.api.ShoppingListApi
 class ShoppingListRepository @Inject constructor(
     private val shoppingItemDao: ShoppingItemDao,
     private val shoppingListApi: ShoppingListApi,
+    @ApplicationScope scope: CoroutineScope,
 ) {
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
     init {
         scope.launch {
             shoppingListApi.listUpdates.collect { shoppingItemDao.replaceAll(it) }

@@ -18,6 +18,7 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nz.eloque.justshop.Preferences
+import nz.eloque.justshop.app.ApplicationScope
 import nz.eloque.justshop.model.auth.AuthMode
 import nz.eloque.justshop.model.auth.AuthStore
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
@@ -63,6 +64,8 @@ class AuthInterceptor(private val authStore: AuthStore) : Interceptor {
 class ShoppingListApi @Inject constructor(
     private val prefs: SharedPreferences,
     private val authStore: AuthStore,
+    okHttpClient: OkHttpClient,
+    @ApplicationScope private val scope: CoroutineScope,
 ) {
     companion object {
         private const val TAG = "ShoppingListApi"
@@ -88,7 +91,7 @@ class ShoppingListApi @Inject constructor(
     }
 
     private val mediaType = "application/json".toMediaType()
-    private val client = OkHttpClient.Builder()
+    private val client = okHttpClient.newBuilder()
         .addInterceptor(AuthInterceptor(authStore))
         .pingInterval(30, TimeUnit.SECONDS)
         .build()
@@ -97,7 +100,7 @@ class ShoppingListApi @Inject constructor(
     fun connect() {
         if (reconnectJob?.isActive == true) return
         Log.i(TAG, "Starting WebSocket Connection")
-        reconnectJob = CoroutineScope(Dispatchers.IO).launch {
+        reconnectJob = scope.launch {
             while (true) {
                 // Checked under the lock so a socket cannot open after disconnect() returned.
                 synchronized(this@ShoppingListApi) { if (isActive) openSocket() }
