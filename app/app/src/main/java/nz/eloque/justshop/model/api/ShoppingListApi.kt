@@ -3,17 +3,18 @@ package nz.eloque.justshop.model.api
 import android.content.SharedPreferences
 import android.util.Log
 import jakarta.inject.Inject
-import jakarta.inject.Provider
 import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import nz.eloque.justshop.Preferences
-import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.auth.AuthMode
 import nz.eloque.justshop.model.auth.AuthStore
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
@@ -57,13 +58,17 @@ class AuthInterceptor(private val authStore: AuthStore) : Interceptor {
 
 @Singleton
 class ShoppingListApi @Inject constructor(
-    private val shoppingListManager: Provider<ShoppingListManager>,
     private val prefs: SharedPreferences,
     private val authStore: AuthStore,
 ) {
     companion object {
         private const val TAG = "ShoppingListApi"
     }
+
+    private val _listUpdates = Channel<List<ShoppingItem>>(Channel.UNLIMITED)
+
+    /** Full lists pushed by the server, in arrival order. Supports a single collector. */
+    val listUpdates: Flow<List<ShoppingItem>> = _listUpdates.receiveAsFlow()
 
     @Volatile
     private var websocket: WebSocket? = null
@@ -114,7 +119,7 @@ class ShoppingListApi @Inject constructor(
             websocket = client
                 .newWebSocket(
                     Request.Builder().url(toApiUrl("${baseUrlProvider.invoke()}/ws")).build(),
-                    ApiWebSocketListener(shoppingListManager.get()::handleApiUpdate) {
+                    ApiWebSocketListener({ _listUpdates.trySend(it.values.toList()) }) {
                         closeSocket()
                     }
                 )

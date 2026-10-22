@@ -9,18 +9,11 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import nz.eloque.justshop.model.ShoppingDb
-import nz.eloque.justshop.model.shopping_list.OfflineShoppingItemRepository
 import nz.eloque.justshop.model.shopping_list.ShoppingItemDao
-import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
 
 @Module
 @InstallIn(SingletonComponent::class)
 object AppModule {
-
-    @Provides
-    fun shoppingItemRepository(shoppingItemDao: ShoppingItemDao): ShoppingItemRepository {
-        return OfflineShoppingItemRepository(shoppingItemDao)
-    }
 
     @Provides
     fun shoppingDb(@ApplicationContext context: Context): ShoppingDb {
