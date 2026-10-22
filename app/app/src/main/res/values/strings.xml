@@ -20,5 +20,18 @@
     <string name="api_password">API Password</string>
     <string name="list_name">Shoppinglist name</string>
     <string name="settings_section_server">Server</string>
-    <string name="settings_section_authentication">Authentication</string>
+    <string name="settings_section_list">Shopping list</string>
+    <string name="onboarding_title">Connect</string>
+    <string name="onboarding_intro">Enter the address of your justshop server and the list you want to use.</string>
+    <string name="onboarding_basic_hint">This server is protected by a username and password.</string>
+    <string name="onboarding_oidc_hint">This server uses single sign-on. You will be taken to its login page.</string>
+    <string name="next">Continue</string>
+    <string name="sign_in">Sign in</string>
+    <string name="sign_in_required">You have been signed out of the server.</string>
+    <string name="login_failed">Sign-in failed</string>
+    <string name="server_unreachable">Could not reach a justshop server at this address.</string>
+    <string name="auth_status_none">No authentication</string>
+    <string name="auth_status_basic">Basic authentication as %1$s</string>
+    <string name="auth_status_oidc">Signed in as %1$s</string>
+    <string name="change_server">Change server or sign out</string>
 </resources>

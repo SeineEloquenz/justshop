@@ -14,61 +14,62 @@ import kotlinx.coroutines.launch
 import nz.eloque.justshop.Preferences
 import nz.eloque.justshop.model.EmberObserver
 import nz.eloque.justshop.model.api.ShoppingListApi
+import nz.eloque.justshop.model.auth.AuthMode
+import nz.eloque.justshop.model.auth.AuthStore
+import nz.eloque.justshop.model.auth.OidcLogin
 
 data class SettingsUiState(
     val serverUrl: String = "",
     val listName: String = "",
+    val authMode: AuthMode = AuthMode.NONE,
     val userName: String = "",
-    val password: String = ""
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val api: ShoppingListApi,
     private val prefs: SharedPreferences,
+    private val authStore: AuthStore,
+    private val oidcLogin: OidcLogin,
 ) : ViewModel(), EmberObserver {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     init {
-        if (!prefs.contains(Preferences.SERVER_URL)) {
-            updateServerUrl("https://justshop.eloque.nz")
-        }
         notifyOfChange()
     }
 
     override fun notifyOfChange() {
         viewModelScope.launch {
+            val mode = authStore.authMode
             _uiState.value = _uiState.value.copy(
                 listName = prefs.getString(Preferences.LIST_NAME, "")!!,
-                serverUrl = prefs.getString(Preferences.SERVER_URL, "")!!,
-                userName = prefs.getString(Preferences.USER_NAME, "")!!,
-                password = prefs.getString(Preferences.PASSWORD, "")!!,
+                serverUrl = authStore.serverUrl,
+                authMode = mode,
+                userName = when (mode) {
+                    AuthMode.OIDC -> authStore.oidcUser.orEmpty()
+                    else -> prefs.getString(Preferences.USER_NAME, "")!!
+                },
             )
-            api.closeSocket()
             Log.d(TAG, "Updated Settings!")
         }
     }
 
-    fun updateServerUrl(url: String) {
-        prefs.edit { putString(Preferences.SERVER_URL, url) }
-        notifyOfChange()
-    }
-
     fun updateListName(listName: String) {
         prefs.edit { putString(Preferences.LIST_NAME, listName) }
+        api.closeSocket()
         notifyOfChange()
     }
 
-    fun updateUserName(userName: String) {
-        prefs.edit { putString(Preferences.USER_NAME, userName) }
-        notifyOfChange()
-    }
-
-    fun updatePassword(password: String) {
-        prefs.edit { putString(Preferences.PASSWORD, password) }
-        notifyOfChange()
+    fun changeServer() {
+        viewModelScope.launch {
+            if (authStore.authMode == AuthMode.OIDC) {
+                oidcLogin.logout()
+            }
+            authStore.reset()
+            api.closeSocket()
+        }
     }
 
     companion object {

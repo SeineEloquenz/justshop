@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.ShoppingBag
@@ -23,8 +24,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -42,12 +45,14 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nz.eloque.compose_kit.input.AbbreviatingText
 import nz.eloque.compose_kit.scaffold.AppScaffold
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.ui.about.AboutView
+import nz.eloque.justshop.ui.onboarding.OnboardingView
 import nz.eloque.justshop.ui.settings.SettingsView
 import nz.eloque.justshop.ui.settings.SettingsViewModel
 import nz.eloque.justshop.ui.shopping_list.ShoppingListView
@@ -57,25 +62,48 @@ sealed class Screen(val route: String, val icon: ImageVector, @StringRes val res
     data object ShoppingList : Screen("shoppingList", Icons.Default.ShoppingBag, R.string.justshop)
     data object Settings : Screen("settings", Icons.Default.Settings, R.string.settings)
     data object About : Screen("about", Icons.Default.Info, R.string.about)
+    data object Onboarding : Screen("onboarding", Icons.Default.Dns, R.string.onboarding_title)
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ShoppingList(
     navController: NavHostController,
+    onboardedFlow: StateFlow<Boolean>,
     modifier: Modifier = Modifier
 ) {
     val shoppingListViewModel: ShoppingListViewModel = hiltViewModel()
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsState(false)
+    val onboarded by onboardedFlow.collectAsState()
+    val startDestination = remember { if (onboarded) Screen.ShoppingList.route else Screen.Onboarding.route }
+
+    LaunchedEffect(onboarded) {
+        val target = if (onboarded) Screen.ShoppingList.route else Screen.Onboarding.route
+        if (navController.currentDestination?.route != target) {
+            navController.navigate(target) {
+                popUpTo(navController.graph.id) { inclusive = true }
+            }
+        }
+    }
 
     Surface(
         modifier = modifier
     ) {
         NavHost(
             navController = navController,
-            startDestination = Screen.ShoppingList.route,
+            startDestination = startDestination,
         ) {
+            composable(Screen.Onboarding.route) {
+                ShoppingListScaffold(
+                    navController = navController,
+                    title = stringResource(id = R.string.onboarding_title),
+                    toolWindow = true,
+                    showBack = false,
+                ) {
+                    OnboardingView(hiltViewModel())
+                }
+            }
             composable(Screen.ShoppingList.route) {
                 ShoppingListScaffold(
                     navController = navController,
@@ -127,6 +155,7 @@ fun ShoppingList(
                         }
                     }
                 ) {
+                    LaunchedEffect(Unit) { settingsViewModel.notifyOfChange() }
                     SettingsView(settingsViewModel)
                 }
             }

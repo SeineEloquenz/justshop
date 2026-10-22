@@ -1,6 +1,7 @@
 [versions]
 accompanistPermissions = "0.37.3"
 activityCompose = "1.13.0"
+browser = "1.8.0"
 androidGradlePlugin = "9.4.1"
 composeBom = "2026.09.00"
 composeKit = "0.5.9"
@@ -21,6 +22,7 @@ room = "2.8.5"
 [libraries]
 accompanist-permissions = { module = "com.google.accompanist:accompanist-permissions", version.ref = "accompanistPermissions" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
+androidx-browser = { module = "androidx.browser:browser", version.ref = "browser" }
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "composeBom" }
 androidx-espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref = "espressoCore" }
 androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "hiltNavigationCompose" }
