@@ -7,10 +7,10 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import jakarta.inject.Inject
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.MainActivity
 import nz.eloque.justshop.R
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class OAuthCallbackActivity : ComponentActivity() {

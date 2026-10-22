@@ -7,7 +7,6 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +17,7 @@ import nz.eloque.justshop.R
 import nz.eloque.justshop.model.auth.AuthMode
 import nz.eloque.justshop.model.auth.AuthStore
 import nz.eloque.justshop.model.auth.OidcLogin
+import javax.inject.Inject
 
 enum class OnboardingStep { SERVER, BASIC_CREDENTIALS, OIDC_SIGN_IN }
 

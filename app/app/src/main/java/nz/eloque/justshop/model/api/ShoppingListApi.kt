@@ -2,8 +2,6 @@ package nz.eloque.justshop.model.api
 
 import android.content.SharedPreferences
 import android.util.Log
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -34,6 +32,8 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.WebSocket
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
+import javax.inject.Singleton
 
 class AuthInterceptor(private val authStore: AuthStore) : Interceptor {
 

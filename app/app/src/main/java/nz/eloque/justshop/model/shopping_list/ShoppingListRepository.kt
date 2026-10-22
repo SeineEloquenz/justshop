@@ -1,13 +1,13 @@
 package nz.eloque.justshop.model.shopping_list
 
-import jakarta.inject.Inject
-import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.app.ApplicationScope
 import nz.eloque.justshop.model.api.ShoppingListApi
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /** Serves the list from Room and mirrors every list the server pushes into it. */
 @Singleton

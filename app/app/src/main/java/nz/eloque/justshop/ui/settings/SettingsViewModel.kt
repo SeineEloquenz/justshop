@@ -3,7 +3,6 @@ package nz.eloque.justshop.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import jakarta.inject.Inject
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.model.api.ShoppingListApi
@@ -11,6 +10,7 @@ import nz.eloque.justshop.model.auth.AuthMode
 import nz.eloque.justshop.model.auth.AuthStore
 import nz.eloque.justshop.model.auth.Connection
 import nz.eloque.justshop.model.auth.OidcLogin
+import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
