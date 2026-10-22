@@ -112,9 +112,9 @@ class ShoppingListApi @Inject constructor(
 
     suspend fun deleteChecked() {
         try {
-            val res = delete("${baseUrlProvider.invoke()}/delete-checked")
-            if (res.code != 200) {
-                Log.d(TAG, "Delete-Checked ${res.code}")
+            val code = delete("${baseUrlProvider.invoke()}/delete-checked")
+            if (code != 200) {
+                Log.d(TAG, "Delete-Checked $code")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to call delete-checked", e)
@@ -123,9 +123,9 @@ class ShoppingListApi @Inject constructor(
 
     suspend fun deleteAll() {
         try {
-            val res = delete("${baseUrlProvider.invoke()}/delete-all")
-            if (res.code != 200) {
-                Log.d(TAG, "Delete-All ${res.code}")
+            val code = delete("${baseUrlProvider.invoke()}/delete-all")
+            if (code != 200) {
+                Log.d(TAG, "Delete-All $code")
             }
         } catch (e: Exception) {
             Log.e(TAG, "Failed to call delete-all", e)
@@ -135,11 +135,11 @@ class ShoppingListApi @Inject constructor(
     suspend fun update(item: ShoppingItem): Boolean {
         return try {
             val json = item.toJson()
-            val res = post("${baseUrlProvider.invoke()}/update", json.toString())
-            if (res.code != 200) {
-                Log.d(TAG, "Update ${res.code}")
+            val code = post("${baseUrlProvider.invoke()}/update", json.toString())
+            if (code != 200) {
+                Log.d(TAG, "Update $code")
             }
-            res.code == 200
+            code == 200
         } catch (e: Exception) {
             Log.e(TAG, "Failed to call update for item ${item.id}", e)
             false
@@ -147,22 +147,22 @@ class ShoppingListApi @Inject constructor(
     }
 
     @Suppress("RedundantSuspendModifier")
-    private suspend fun post(url: String, json: String): Response {
+    private suspend fun post(url: String, json: String): Int {
         val body: RequestBody = json.toRequestBody(mediaType)
         val request: Request = Request.Builder()
             .url(toApiUrl(url))
             .post(body)
             .build()
-        return client.newCall(request).execute()
+        return client.newCall(request).execute().use { it.code }
     }
 
     @Suppress("RedundantSuspendModifier")
-    private suspend fun delete(url: String): Response {
+    private suspend fun delete(url: String): Int {
         val request: Request = Request.Builder()
             .url(toApiUrl(url))
             .delete()
             .build()
-        return client.newCall(request).execute()
+        return client.newCall(request).execute().use { it.code }
     }
 
     @Suppress("RedundantSuspendModifier")
