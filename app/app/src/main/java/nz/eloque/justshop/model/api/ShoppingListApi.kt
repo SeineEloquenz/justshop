@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import jakarta.inject.Inject
 import jakarta.inject.Provider
+import jakarta.inject.Singleton
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -57,6 +58,7 @@ class AuthInterceptor(
     }
 }
 
+@Singleton
 class ShoppingListApi @Inject constructor(
     private val shoppingListManager: Provider<ShoppingListManager>,
     private val prefs: SharedPreferences,
@@ -64,10 +66,11 @@ class ShoppingListApi @Inject constructor(
 ) {
     companion object {
         private const val TAG = "ShoppingListApi"
-
-        private var websocket: WebSocket? = null
-        private var reconnectJob: Job? = null
     }
+
+    @Volatile
+    private var websocket: WebSocket? = null
+    private var reconnectJob: Job? = null
 
     private val serverUrlProvider: () -> String = { prefs.getString(Preferences.SERVER_URL, "")!! }
     private val apiVersion = "v2"
