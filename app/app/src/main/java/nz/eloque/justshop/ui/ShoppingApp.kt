@@ -69,8 +69,6 @@ fun ShoppingList(
     onboardedFlow: StateFlow<Boolean>,
     modifier: Modifier = Modifier
 ) {
-    val shoppingListViewModel: ShoppingListViewModel = hiltViewModel()
-    val settingsViewModel: SettingsViewModel = hiltViewModel()
     val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsState(false)
     val onboarded by onboardedFlow.collectAsState()
     val startDestination = remember { if (onboarded) Screen.ShoppingList.route else Screen.Onboarding.route }
@@ -102,6 +100,7 @@ fun ShoppingList(
                 }
             }
             composable(Screen.ShoppingList.route) {
+                val shoppingListViewModel: ShoppingListViewModel = hiltViewModel()
                 ShoppingListScaffold(
                     navController = navController,
                     title = stringResource(id = R.string.justshop),
@@ -135,6 +134,7 @@ fun ShoppingList(
                 }
             }
             composable(Screen.Settings.route) {
+                val settingsViewModel: SettingsViewModel = hiltViewModel()
                 ShoppingListScaffold(
                     navController = navController,
                     title = stringResource(id = R.string.settings),
