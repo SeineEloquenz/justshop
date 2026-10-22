@@ -36,10 +36,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
-import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.auth.launchLogin
@@ -60,13 +57,9 @@ fun ShoppingListView(
     val context = LocalContext.current
     val notSaved = stringResource(R.string.change_not_saved)
 
-    fun sendUpdate(item: ShoppingItem) {
-        shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
-            if (!shoppingListViewModel.updateItem(item)) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(context, notSaved, Toast.LENGTH_LONG).show()
-                }
-            }
+    LaunchedEffect(Unit) {
+        shoppingListViewModel.updateFailed.collect {
+            Toast.makeText(context, notSaved, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -109,8 +102,8 @@ fun ShoppingListView(
                     ShoppingItemCard(
                         itemContent = item.content,
                         checkedState = item.checked,
-                        onCheckedChange = { sendUpdate(item.copy(checked = it)) },
-                        onEdit = { sendUpdate(item.copy(content = it)) },
+                        onCheckedChange = { shoppingListViewModel.updateItem(item.copy(checked = it)) },
+                        onEdit = { shoppingListViewModel.updateItem(item.copy(content = it)) },
                     )
                 }
             }
@@ -124,7 +117,7 @@ fun ShoppingListView(
                 coroutineScope.launch {
                     listState.animateScrollToItem(shoppingListUiState.size)
                 }
-                sendUpdate(ShoppingItem(UUID.randomUUID(), it, checked = false))
+                shoppingListViewModel.updateItem(ShoppingItem(UUID.randomUUID(), it, checked = false))
             }
         )
     }

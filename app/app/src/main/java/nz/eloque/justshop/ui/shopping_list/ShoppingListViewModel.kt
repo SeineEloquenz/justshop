@@ -5,10 +5,14 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.model.ShoppingListManager
@@ -49,14 +53,25 @@ class ShoppingListViewModel @Inject constructor(
         _loginUrl.value = null
     }
 
-    suspend fun updateItem(shoppingItem: ShoppingItem): Boolean = shoppingListManager.update(shoppingItem)
+    private val _updateFailed = Channel<Unit>(Channel.CONFLATED)
+    val updateFailed: Flow<Unit> = _updateFailed.receiveAsFlow()
+
+    fun updateItem(shoppingItem: ShoppingItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            if (!shoppingListManager.update(shoppingItem)) {
+                _updateFailed.send(Unit)
+            }
+        }
+    }
 
     suspend fun deleteAll() {
         shoppingListManager.deleteAll()
     }
 
-    suspend fun deleteChecked() {
-        shoppingListManager.deleteChecked()
+    fun deleteChecked() {
+        viewModelScope.launch(Dispatchers.IO) {
+            shoppingListManager.deleteChecked()
+        }
     }
 
     companion object {
