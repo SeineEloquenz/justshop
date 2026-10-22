@@ -132,17 +132,6 @@ class ShoppingListApi @Inject constructor(
         }
     }
 
-    suspend fun deleteAll() {
-        try {
-            val code = delete("${baseUrlProvider.invoke()}/delete-all")
-            if (code != 200) {
-                Log.d(TAG, "Delete-All $code")
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to call delete-all", e)
-        }
-    }
-
     suspend fun update(item: ShoppingItem): Boolean {
         return try {
             val json = item.toJson()

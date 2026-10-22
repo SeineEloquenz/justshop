@@ -63,10 +63,6 @@ class ShoppingListViewModel @Inject constructor(
         }
     }
 
-    suspend fun deleteAll() {
-        shoppingListManager.deleteAll()
-    }
-
     fun deleteChecked() {
         viewModelScope.launch {
             shoppingListManager.deleteChecked()

@@ -22,10 +22,6 @@ class ShoppingListManager @Inject constructor(
 
     fun messages(): Flow<List<ShoppingItem>> = shoppingItemRepository.all()
 
-    suspend fun deleteAll() {
-        shoppingListApi.deleteAll()
-    }
-
     suspend fun deleteChecked() {
         shoppingListApi.deleteChecked()
     }

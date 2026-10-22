@@ -9,11 +9,11 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import nz.eloque.compose_kit.components.Section
 import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
@@ -25,7 +25,7 @@ fun SettingsView(
     settingsViewModel: SettingsViewModel,
     modifier: Modifier = Modifier
 ) {
-    val uiState by settingsViewModel.uiState.collectAsState()
+    val uiState by settingsViewModel.uiState.collectAsStateWithLifecycle()
 
     Column(modifier = modifier) {
         Section(heading = stringResource(R.string.settings_section_server)) {

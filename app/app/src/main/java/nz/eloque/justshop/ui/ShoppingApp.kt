@@ -25,7 +25,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,6 +35,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -69,8 +69,8 @@ fun ShoppingList(
     onboardedFlow: StateFlow<Boolean>,
     modifier: Modifier = Modifier
 ) {
-    val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsState(false)
-    val onboarded by onboardedFlow.collectAsState()
+    val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsStateWithLifecycle(false)
+    val onboarded by onboardedFlow.collectAsStateWithLifecycle()
     val startDestination = remember { if (onboarded) Screen.ShoppingList.route else Screen.Onboarding.route }
 
     LaunchedEffect(onboarded) {
@@ -114,7 +114,7 @@ fun ShoppingList(
                     }
                 ) { scrollBehavior ->
                     if (!connectionStateFlow.value) {
-                        Box(modifier = modifier.fillMaxSize(),
+                        Box(modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {
                             Image(

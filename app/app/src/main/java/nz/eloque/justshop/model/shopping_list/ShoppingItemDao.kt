@@ -26,7 +26,7 @@ interface ShoppingItemDao {
         insert(shoppingItems)
     }
 
-    @Query("SELECT * FROM shopping_items")
+    @Query("SELECT * FROM shopping_items ORDER BY timestamp")
     fun all(): Flow<List<ShoppingItem>>
 
     @Query("DELETE from shopping_items")

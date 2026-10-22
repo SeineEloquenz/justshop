@@ -22,7 +22,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
 import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
@@ -50,10 +50,9 @@ fun ShoppingListView(
     scrollBehavior: TopAppBarScrollBehavior,
     modifier: Modifier = Modifier
 ) {
-    val shoppingListUiState by shoppingListViewModel.items.collectAsState()
-    val signInRequired by shoppingListViewModel.signInRequired.collectAsState()
-    val sortedList = shoppingListUiState.sortedBy { it.timestamp }
-    val loginUrl by shoppingListViewModel.loginUrl.collectAsState()
+    val shoppingListUiState by shoppingListViewModel.items.collectAsStateWithLifecycle()
+    val signInRequired by shoppingListViewModel.signInRequired.collectAsStateWithLifecycle()
+    val loginUrl by shoppingListViewModel.loginUrl.collectAsStateWithLifecycle()
     val context = LocalContext.current
     val notSaved = stringResource(R.string.change_not_saved)
 
@@ -90,14 +89,14 @@ fun ShoppingListView(
         val listState = rememberLazyListState(initialFirstVisibleItemIndex = shoppingListUiState.size)
         LazyColumn(
             state = listState,
-            modifier = modifier
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(9f)
                 .nestedScroll(scrollBehavior.nestedScrollConnection)
         ) {
-            items(sortedList) { item ->
+            items(shoppingListUiState) { item ->
                 Row(
-                    modifier = modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     ShoppingItemCard(
                         itemContent = item.content,
