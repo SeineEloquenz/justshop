@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import nz.eloque.justshop.Preferences
 import nz.eloque.justshop.model.ShoppingListManager
 import nz.eloque.justshop.model.auth.AuthMode
@@ -156,23 +157,21 @@ class ShoppingListApi @Inject constructor(
         }
     }
 
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun post(url: String, json: String): Int {
+    private suspend fun post(url: String, json: String): Int = withContext(Dispatchers.IO) {
         val body: RequestBody = json.toRequestBody(mediaType)
         val request: Request = Request.Builder()
             .url(toApiUrl(url))
             .post(body)
             .build()
-        return client.newCall(request).execute().use { it.code }
+        client.newCall(request).execute().use { it.code }
     }
 
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun delete(url: String): Int {
+    private suspend fun delete(url: String): Int = withContext(Dispatchers.IO) {
         val request: Request = Request.Builder()
             .url(toApiUrl(url))
             .delete()
             .build()
-        return client.newCall(request).execute().use { it.code }
+        client.newCall(request).execute().use { it.code }
     }
 
     fun toApiUrl(url: String): HttpUrl {

@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -57,7 +56,7 @@ class ShoppingListViewModel @Inject constructor(
     val updateFailed: Flow<Unit> = _updateFailed.receiveAsFlow()
 
     fun updateItem(shoppingItem: ShoppingItem) {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             if (!shoppingListManager.update(shoppingItem)) {
                 _updateFailed.send(Unit)
             }
@@ -69,7 +68,7 @@ class ShoppingListViewModel @Inject constructor(
     }
 
     fun deleteChecked() {
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch {
             shoppingListManager.deleteChecked()
         }
     }
