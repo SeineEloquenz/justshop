@@ -119,4 +119,5 @@ dependencies {
 
     //http requests
     implementation(libs.okhttp)
+    implementation(libs.androidx.browser)
 }

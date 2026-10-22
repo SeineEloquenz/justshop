@@ -13,6 +13,7 @@ fn test_state() -> AppState {
     AppState {
         shopping_list: Arc::new(RwLock::new(HashMap::new())),
         users: Users::default(),
+        oidc: None,
     }
 }
 

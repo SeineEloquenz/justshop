@@ -6,10 +6,13 @@ import jakarta.inject.Inject
 import jakarta.inject.Provider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.Preferences
 import nz.eloque.justshop.model.ShoppingListManager
+import nz.eloque.justshop.model.auth.AuthMode
+import nz.eloque.justshop.model.auth.AuthStore
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import okhttp3.Credentials
 import okhttp3.HttpUrl
@@ -25,41 +28,47 @@ import okhttp3.WebSocket
 import org.json.JSONArray
 import org.json.JSONObject
 
-class BasicAuthInterceptor(
-    private val usernameProvider: () -> String,
-    private val passwordProvider: () -> String
+class AuthInterceptor(
+    private val authStore: AuthStore,
+    private val prefs: SharedPreferences,
 ) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        val req = chain.request()
-        val username = usernameProvider.invoke()
-        val password = passwordProvider.invoke()
-        return if (username != "" && password != "") {
-            val credentials = Credentials.basic(usernameProvider.invoke(), passwordProvider.invoke())
-            val authenticatedRequest = req.newBuilder()
-                .header("Authorization", credentials)
-                .build()
-            chain.proceed(authenticatedRequest)
-        } else {
-            chain.proceed(req)
+        val mode = authStore.authMode
+        val builder = chain.request().newBuilder()
+        val sessionToken = if (mode == AuthMode.OIDC) authStore.sessionToken else null
+        when (mode) {
+            AuthMode.BASIC -> {
+                val username = prefs.getString(Preferences.USER_NAME, "")!!
+                val password = prefs.getString(Preferences.PASSWORD, "")!!
+                if (username != "" && password != "") {
+                    builder.header("Authorization", Credentials.basic(username, password))
+                }
+            }
+            AuthMode.OIDC -> sessionToken?.let { builder.header("Authorization", "Bearer $it") }
+            AuthMode.NONE -> {}
         }
-
+        val response = chain.proceed(builder.build())
+        if (response.code == 401 && mode == AuthMode.OIDC) {
+            authStore.markSignInRequired(sessionToken)
+        }
+        return response
     }
 }
 
 class ShoppingListApi @Inject constructor(
     private val shoppingListManager: Provider<ShoppingListManager>,
     private val prefs: SharedPreferences,
+    private val authStore: AuthStore,
 ) {
     companion object {
         private const val TAG = "ShoppingListApi"
 
         private var websocket: WebSocket? = null
+        private var reconnectJob: Job? = null
     }
 
-    private val serverUrlProvider: () -> String = { prefs.getString(Preferences.SERVER_URL, "https://justshop.eloque.nz")!! }
-    private val usernameProvider: () -> String =  { prefs.getString(Preferences.USER_NAME, "")!! }
-    private val passwordProvider: () -> String = { prefs.getString(Preferences.PASSWORD, "")!! }
+    private val serverUrlProvider: () -> String = { prefs.getString(Preferences.SERVER_URL, "")!! }
     private val apiVersion = "v2"
 
     private val baseUrlProvider = {
@@ -68,16 +77,16 @@ class ShoppingListApi @Inject constructor(
 
     private val mediaType = "application/json".toMediaType()
     private val client = OkHttpClient.Builder()
-        .addInterceptor(BasicAuthInterceptor(usernameProvider, passwordProvider))
+        .addInterceptor(AuthInterceptor(authStore, prefs))
         .build()
 
     fun connect() {
+        if (reconnectJob?.isActive == true) return
         Log.i(TAG, "Starting WebSocket Connection")
-        openSocket()
-        CoroutineScope(Dispatchers.IO).launch {
+        reconnectJob = CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                delay(1000)
                 openSocket()
+                delay(1000)
             }
         }
     }
@@ -89,7 +98,7 @@ class ShoppingListApi @Inject constructor(
     }
 
     private fun openSocket() {
-        if (websocket == null) {
+        if (websocket == null && authStore.canConnect) {
             Log.d(TAG, "Socket opened")
             websocket = client
                 .newWebSocket(
@@ -114,7 +123,7 @@ class ShoppingListApi @Inject constructor(
 
     suspend fun deleteAll() {
         try {
-            val res = delete("${baseUrlProvider.invoke()}/delete-checked")
+            val res = delete("${baseUrlProvider.invoke()}/delete-all")
             if (res.code != 200) {
                 Log.d(TAG, "Delete-All ${res.code}")
             }

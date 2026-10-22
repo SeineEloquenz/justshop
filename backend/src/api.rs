@@ -10,6 +10,7 @@ use std::sync::{atomic::{AtomicUsize, Ordering}, Arc};
 use tokio::sync::mpsc;
 use tracing::{debug, error, info};
 
+use crate::auth::OidcAuth;
 use crate::shopping_list::ShoppingItem;
 use crate::shopping_list::ShoppingListContent;
 
@@ -17,6 +18,7 @@ use crate::shopping_list::ShoppingListContent;
 pub struct AppState {
     pub shopping_list: Arc<RwLock<ShoppingListContent>>,
     pub users: Users,
+    pub oidc: Option<Arc<OidcAuth>>,
 }
 
 pub struct User {

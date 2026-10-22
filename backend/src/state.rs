@@ -1,29 +1,28 @@
+use serde::de::DeserializeOwned;
+use serde::Serialize;
 use tokio::fs::{self, File};
 use tokio::io::AsyncWriteExt;
 use tracing::info;
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
 
-use crate::shopping_list::ShoppingListContent;
-
-pub async fn load_state(state_path: &Path) -> Result<ShoppingListContent, tokio::io::Error> {
+pub async fn load_state<T: DeserializeOwned + Default>(state_path: &Path) -> Result<T, tokio::io::Error> {
     if state_path.exists() {
         let bytes = fs::read(state_path).await?;
-        let data: ShoppingListContent = serde_json::from_slice(&bytes)?;
-        info!("Loaded data from disk.");
+        let data: T = serde_json::from_slice(&bytes)?;
+        info!("Loaded {} from disk.", state_path.display());
         Ok(data)
     } else {
-        info!("State file missing, starting with an empty state.");
-        Ok(HashMap::new())
+        info!("{} missing, starting with an empty state.", state_path.display());
+        Ok(T::default())
     }
 }
 
-pub async fn save_state(
+pub async fn save_state<T: Serialize>(
     state_path: &Path,
-    shopping_list: &RwLock<ShoppingListContent>,
+    state: &RwLock<T>,
 ) -> Result<(), tokio::io::Error> {
-    let bytes = serde_json::to_vec_pretty(&*shopping_list.read().unwrap())?;
+    let bytes = serde_json::to_vec_pretty(&*state.read().unwrap())?;
 
     if let Some(parent) = state_path.parent() {
         fs::create_dir_all(parent).await?;
@@ -39,6 +38,6 @@ pub async fn save_state(
     drop(file);
 
     fs::rename(&tmp_path, state_path).await?;
-    info!("Saved state to disk.");
+    info!("Saved {} to disk.", state_path.display());
     Ok(())
 }

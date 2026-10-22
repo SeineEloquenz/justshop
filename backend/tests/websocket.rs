@@ -13,6 +13,7 @@ async fn websocket_receives_broadcast() {
     let state = AppState {
         shopping_list: Arc::new(RwLock::new(HashMap::new())),
         users: Users::default(),
+        oidc: None,
     };
 
     // Serve on an ephemeral loopback port.
