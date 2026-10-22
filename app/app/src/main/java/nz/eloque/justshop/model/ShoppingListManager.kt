@@ -29,8 +29,4 @@ class ShoppingListManager @Inject constructor(
     suspend fun deleteChecked() {
         shoppingListApi.deleteChecked()
     }
-
-    companion object {
-        private const val TAG = "ShoppingListManager"
-    }
 }

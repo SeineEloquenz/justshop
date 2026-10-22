@@ -46,6 +46,16 @@ class AuthStore @Inject constructor(
                 putBoolean(Preferences.ONBOARDED, true)
             }
         }
+        if (prefs.contains(Preferences.USER_NAME) || prefs.contains(Preferences.PASSWORD)) {
+            secrets.edit(commit = true) {
+                putString(BASIC_USER, prefs.getString(Preferences.USER_NAME, ""))
+                putString(BASIC_PASSWORD, prefs.getString(Preferences.PASSWORD, ""))
+            }
+            prefs.edit {
+                remove(Preferences.USER_NAME)
+                remove(Preferences.PASSWORD)
+            }
+        }
         _onboarded.value = prefs.getBoolean(Preferences.ONBOARDED, false)
         _signInRequired.value = authMode == AuthMode.OIDC && sessionToken == null
     }
@@ -61,15 +71,21 @@ class AuthStore @Inject constructor(
 
     val oidcUser: String? get() = secrets.getString(OIDC_USER, null)
 
+    val basicUser: String get() = secrets.getString(BASIC_USER, "")!!
+
+    val basicPassword: String get() = secrets.getString(BASIC_PASSWORD, "")!!
+
     val canConnect: Boolean get() = onboarded.value && !signInRequired.value
 
     fun completeOnboarding(serverUrl: String, listName: String, mode: AuthMode, userName: String = "", password: String = "") {
+        secrets.edit(commit = true) {
+            putString(BASIC_USER, userName)
+            putString(BASIC_PASSWORD, password)
+        }
         prefs.edit {
             putString(Preferences.SERVER_URL, serverUrl)
             putString(Preferences.LIST_NAME, listName)
             putString(Preferences.AUTH_MODE, mode.name)
-            putString(Preferences.USER_NAME, userName)
-            putString(Preferences.PASSWORD, password)
             putBoolean(Preferences.ONBOARDED, true)
         }
         _onboarded.value = true
@@ -119,8 +135,6 @@ class AuthStore @Inject constructor(
     fun reset() {
         secrets.edit { clear() }
         prefs.edit {
-            remove(Preferences.USER_NAME)
-            remove(Preferences.PASSWORD)
             remove(Preferences.AUTH_MODE)
             putBoolean(Preferences.ONBOARDED, false)
         }
@@ -132,6 +146,8 @@ class AuthStore @Inject constructor(
         const val SECRETS_FILE = "auth"
         private const val SESSION_TOKEN = "sessionToken"
         private const val OIDC_USER = "oidcUser"
+        private const val BASIC_USER = "basicUser"
+        private const val BASIC_PASSWORD = "basicPassword"
         private const val PENDING_STATE = "pendingState"
         private const val PENDING_NONCE = "pendingNonce"
         private const val PENDING_VERIFIER = "pendingVerifier"

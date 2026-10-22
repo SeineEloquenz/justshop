@@ -22,9 +22,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        shoppingListApi.ensureCreation()
-        shoppingListApi.connect()
-
         enableEdgeToEdge()
         setContent {
             val navController = rememberNavController()
@@ -37,7 +34,13 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    companion object {
-        private const val TAG = "MainActivity"
+    override fun onStart() {
+        super.onStart()
+        shoppingListApi.connect()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        shoppingListApi.disconnect()
     }
 }

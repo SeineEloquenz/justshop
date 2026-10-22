@@ -9,6 +9,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.Preferences
 import nz.eloque.justshop.model.ShoppingListManager
@@ -26,14 +27,9 @@ import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.WebSocket
-import org.json.JSONArray
-import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
-class AuthInterceptor(
-    private val authStore: AuthStore,
-    private val prefs: SharedPreferences,
-) : Interceptor {
+class AuthInterceptor(private val authStore: AuthStore) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val mode = authStore.authMode
@@ -41,8 +37,8 @@ class AuthInterceptor(
         val sessionToken = if (mode == AuthMode.OIDC) authStore.sessionToken else null
         when (mode) {
             AuthMode.BASIC -> {
-                val username = prefs.getString(Preferences.USER_NAME, "")!!
-                val password = prefs.getString(Preferences.PASSWORD, "")!!
+                val username = authStore.basicUser
+                val password = authStore.basicPassword
                 if (username != "" && password != "") {
                     builder.header("Authorization", Credentials.basic(username, password))
                 }
@@ -81,21 +77,30 @@ class ShoppingListApi @Inject constructor(
 
     private val mediaType = "application/json".toMediaType()
     private val client = OkHttpClient.Builder()
-        .addInterceptor(AuthInterceptor(authStore, prefs))
+        .addInterceptor(AuthInterceptor(authStore))
         .pingInterval(30, TimeUnit.SECONDS)
         .build()
 
+    @Synchronized
     fun connect() {
         if (reconnectJob?.isActive == true) return
         Log.i(TAG, "Starting WebSocket Connection")
         reconnectJob = CoroutineScope(Dispatchers.IO).launch {
             while (true) {
-                openSocket()
+                // Checked under the lock so a socket cannot open after disconnect() returned.
+                synchronized(this@ShoppingListApi) { if (isActive) openSocket() }
                 delay(1000)
             }
         }
     }
 
+    @Synchronized
+    fun disconnect() {
+        reconnectJob?.cancel()
+        closeSocket()
+    }
+
+    @Synchronized
     fun closeSocket() {
         Log.d(TAG, "Socket closed")
         websocket?.cancel()
@@ -168,27 +173,6 @@ class ShoppingListApi @Inject constructor(
             .delete()
             .build()
         return client.newCall(request).execute().use { it.code }
-    }
-
-    @Suppress("RedundantSuspendModifier")
-    private suspend fun get(url: String): Response {
-        val request: Request = Request.Builder()
-            .url(toApiUrl(url))
-            .get()
-            .build()
-        return client.newCall(request).execute()
-    }
-
-    fun JSONArray.forEach(action: (JSONObject) -> Unit) {
-        var i = 0
-        while (i < this.length()) {
-            val element = this.getJSONObject(i)
-            action.invoke(element)
-            i++
-        }
-    }
-
-    fun ensureCreation() {
     }
 
     fun toApiUrl(url: String): HttpUrl {

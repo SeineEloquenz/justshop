@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.Preferences
-import nz.eloque.justshop.model.EmberObserver
 import nz.eloque.justshop.model.api.ShoppingListApi
 import nz.eloque.justshop.model.auth.AuthMode
 import nz.eloque.justshop.model.auth.AuthStore
@@ -31,7 +30,7 @@ class SettingsViewModel @Inject constructor(
     private val prefs: SharedPreferences,
     private val authStore: AuthStore,
     private val oidcLogin: OidcLogin,
-) : ViewModel(), EmberObserver {
+) : ViewModel() {
 
     private val _uiState = MutableStateFlow(SettingsUiState())
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -40,7 +39,7 @@ class SettingsViewModel @Inject constructor(
         notifyOfChange()
     }
 
-    override fun notifyOfChange() {
+    fun notifyOfChange() {
         viewModelScope.launch {
             val mode = authStore.authMode
             _uiState.value = _uiState.value.copy(
@@ -49,7 +48,7 @@ class SettingsViewModel @Inject constructor(
                 authMode = mode,
                 userName = when (mode) {
                     AuthMode.OIDC -> authStore.oidcUser.orEmpty()
-                    else -> prefs.getString(Preferences.USER_NAME, "")!!
+                    else -> authStore.basicUser
                 },
             )
             Log.d(TAG, "Updated Settings!")
