@@ -39,6 +39,12 @@ in
       default = "/var/lib/justshop";
       description = "Path to server's state directory";
     };
+    listen = mkOption {
+      type = types.str;
+      default = "127.0.0.1:3030";
+      example = "0.0.0.0:3030";
+      description = "Address and port the server listens on";
+    };
     oidc = {
       enable = mkEnableOption "login through an OpenID Connect provider";
       issuer = mkOption {
@@ -86,7 +92,7 @@ in
 
       serviceConfig = {
         ExecStart = lib.concatStringsSep " " (
-          [ "${justshop}/bin/justshop-backend --state-file ${cfg.stateDir}/state.json" ] ++ oidcArgs
+          [ "${justshop}/bin/justshop-backend --listen ${cfg.listen} --state-file ${cfg.stateDir}/state.json" ] ++ oidcArgs
         );
         LoadCredential = lib.mkIf cfg.oidc.enable [ "oidc-client-secret:${cfg.oidc.clientSecretFile}" ];
         User = cfg.user;

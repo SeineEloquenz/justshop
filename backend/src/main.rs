@@ -13,6 +13,9 @@ use justshop_backend::{api, state, app};
 
 #[derive(Parser, Debug, Clone)]
 struct Cli {
+    #[arg(long, default_value = "127.0.0.1:3030")]
+    listen: String,
+
     #[arg(short, long, default_value = "justshop.json")]
     state_file: PathBuf,
 
@@ -145,7 +148,7 @@ async fn main() {
     let sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
     tokio::spawn(persistence_task(cli.state_file, cli.session_file, shopping_list, list_changed, oidc, sigint, sigterm));
 
-    let listener = tokio::net::TcpListener::bind("0.0.0.0:3030")
+    let listener = tokio::net::TcpListener::bind(&cli.listen)
         .await
         .expect("Failed to bind to address");
     axum::serve(listener, app(app_state)).await.expect("Server error");
