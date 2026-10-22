@@ -132,15 +132,17 @@ class ShoppingListApi @Inject constructor(
         }
     }
 
-    suspend fun update(item: ShoppingItem) {
-        try {
+    suspend fun update(item: ShoppingItem): Boolean {
+        return try {
             val json = item.toJson()
             val res = post("${baseUrlProvider.invoke()}/update", json.toString())
             if (res.code != 200) {
                 Log.d(TAG, "Update ${res.code}")
             }
+            res.code == 200
         } catch (e: Exception) {
             Log.e(TAG, "Failed to call update for item ${item.id}", e)
+            false
         }
     }
 

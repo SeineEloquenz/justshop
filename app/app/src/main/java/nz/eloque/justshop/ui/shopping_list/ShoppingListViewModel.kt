@@ -49,9 +49,7 @@ class ShoppingListViewModel @Inject constructor(
         _loginUrl.value = null
     }
 
-    suspend fun updateItem(shoppingItem: ShoppingItem) {
-        shoppingListManager.update(shoppingItem)
-    }
+    suspend fun updateItem(shoppingItem: ShoppingItem): Boolean = shoppingListManager.update(shoppingItem)
 
     suspend fun deleteAll() {
         shoppingListManager.deleteAll()

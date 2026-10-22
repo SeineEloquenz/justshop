@@ -1,5 +1,6 @@
 package nz.eloque.justshop.ui.shopping_list
 
+import android.widget.Toast
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +39,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import nz.eloque.compose_kit.input.SubmittableTextField
 import nz.eloque.justshop.R
 import nz.eloque.justshop.model.auth.launchLogin
@@ -56,6 +58,17 @@ fun ShoppingListView(
     val sortedList = shoppingListUiState.sortedBy { it.timestamp }
     val loginUrl by shoppingListViewModel.loginUrl.collectAsState()
     val context = LocalContext.current
+    val notSaved = stringResource(R.string.change_not_saved)
+
+    fun sendUpdate(item: ShoppingItem) {
+        shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
+            if (!shoppingListViewModel.updateItem(item)) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, notSaved, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
 
     LaunchedEffect(loginUrl) {
         loginUrl?.let {
@@ -96,16 +109,8 @@ fun ShoppingListView(
                     ShoppingItemCard(
                         itemContent = item.content,
                         checkedState = item.checked,
-                        onCheckedChange = {
-                            shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
-                                shoppingListViewModel.updateItem(item.copy(checked = it))
-                            }
-                        },
-                        onEdit = {
-                            shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
-                                shoppingListViewModel.updateItem(item.copy(content = it))
-                            }
-                        },
+                        onCheckedChange = { sendUpdate(item.copy(checked = it)) },
+                        onEdit = { sendUpdate(item.copy(content = it)) },
                     )
                 }
             }
@@ -119,9 +124,7 @@ fun ShoppingListView(
                 coroutineScope.launch {
                     listState.animateScrollToItem(shoppingListUiState.size)
                 }
-                shoppingListViewModel.viewModelScope.launch(Dispatchers.IO) {
-                    shoppingListViewModel.updateItem(ShoppingItem(UUID.randomUUID(), it, checked = false))
-                }
+                sendUpdate(ShoppingItem(UUID.randomUUID(), it, checked = false))
             }
         )
     }

@@ -23,9 +23,7 @@ class ShoppingListManager @Inject constructor(
         }
     }
 
-    suspend fun update(shoppingItem: ShoppingItem) {
-        shoppingListApi.update(shoppingItem)
-    }
+    suspend fun update(shoppingItem: ShoppingItem): Boolean = shoppingListApi.update(shoppingItem)
 
     fun messages(): Flow<List<ShoppingItem>> = shoppingItemRepository.all()
 

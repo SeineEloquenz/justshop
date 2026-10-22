@@ -34,4 +34,5 @@
     <string name="auth_status_basic">Basic authentication as %1$s</string>
     <string name="auth_status_oidc">Signed in as %1$s</string>
     <string name="change_server">Change server or sign out</string>
+    <string name="change_not_saved">Could not reach the server. Your change was not saved.</string>
 </resources>
