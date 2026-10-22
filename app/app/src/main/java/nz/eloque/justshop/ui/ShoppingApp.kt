@@ -148,7 +148,6 @@ fun ShoppingList(
                         }
                     }
                 ) {
-                    LaunchedEffect(Unit) { settingsViewModel.notifyOfChange() }
                     SettingsView(settingsViewModel)
                 }
             }

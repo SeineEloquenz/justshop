@@ -21,6 +21,13 @@ data class PendingLogin(
     val listName: String?,
 )
 
+data class Connection(
+    val serverUrl: String = "",
+    val listName: String = "",
+    val authMode: AuthMode = AuthMode.NONE,
+    val userName: String = "",
+)
+
 /**
  * Connection settings and credentials. OIDC secrets live in a separate preference file
  * that is excluded from backups.
@@ -37,6 +44,9 @@ class AuthStore @Inject constructor(
 
     private val _signInRequired = MutableStateFlow(false)
     val signInRequired: StateFlow<Boolean> = _signInRequired.asStateFlow()
+
+    private val _connection = MutableStateFlow(Connection())
+    val connection: StateFlow<Connection> = _connection.asStateFlow()
 
     init {
         if (!prefs.contains(Preferences.ONBOARDED) && prefs.contains(Preferences.SERVER_URL)) {
@@ -58,6 +68,7 @@ class AuthStore @Inject constructor(
         }
         _onboarded.value = prefs.getBoolean(Preferences.ONBOARDED, false)
         _signInRequired.value = authMode == AuthMode.OIDC && sessionToken == null
+        publishConnection()
     }
 
     val serverUrl: String get() = prefs.getString(Preferences.SERVER_URL, "")!!
@@ -90,6 +101,12 @@ class AuthStore @Inject constructor(
         }
         _onboarded.value = true
         _signInRequired.value = mode == AuthMode.OIDC && sessionToken == null
+        publishConnection()
+    }
+
+    fun updateListName(listName: String) {
+        prefs.edit { putString(Preferences.LIST_NAME, listName) }
+        publishConnection()
     }
 
     @Synchronized
@@ -99,6 +116,7 @@ class AuthStore @Inject constructor(
             putString(OIDC_USER, user)
         }
         _signInRequired.value = false
+        publishConnection()
     }
 
     /** Drops [rejectedToken] unless a newer session has replaced it. */
@@ -140,6 +158,17 @@ class AuthStore @Inject constructor(
         }
         _signInRequired.value = false
         _onboarded.value = false
+        publishConnection()
+    }
+
+    private fun publishConnection() {
+        val mode = authMode
+        _connection.value = Connection(
+            serverUrl = serverUrl,
+            listName = prefs.getString(Preferences.LIST_NAME, "")!!,
+            authMode = mode,
+            userName = if (mode == AuthMode.OIDC) oidcUser.orEmpty() else basicUser,
+        )
     }
 
     companion object {
