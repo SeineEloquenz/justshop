@@ -27,6 +27,7 @@ import okhttp3.Response
 import okhttp3.WebSocket
 import org.json.JSONArray
 import org.json.JSONObject
+import java.util.concurrent.TimeUnit
 
 class AuthInterceptor(
     private val authStore: AuthStore,
@@ -78,6 +79,7 @@ class ShoppingListApi @Inject constructor(
     private val mediaType = "application/json".toMediaType()
     private val client = OkHttpClient.Builder()
         .addInterceptor(AuthInterceptor(authStore, prefs))
+        .pingInterval(30, TimeUnit.SECONDS)
         .build()
 
     fun connect() {
