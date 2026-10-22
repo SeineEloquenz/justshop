@@ -1,10 +1,6 @@
 package nz.eloque.justshop.model.api
 
 import android.util.Log
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import okhttp3.Response
 import okhttp3.WebSocket
@@ -13,16 +9,16 @@ import org.json.JSONObject
 import java.util.UUID
 
 class ApiWebSocketListener(
+    private val onConnected: (WebSocket) -> Unit,
     private val onListUpdate: (Map<UUID, ShoppingItem>) -> Unit,
-    private val onConnectionLoss: () -> Unit
+    private val onConnectionLoss: (WebSocket) -> Unit,
 ) : WebSocketListener() {
 
     override fun onOpen(webSocket: WebSocket, response: Response) {
-        CoroutineScope(Dispatchers.IO).launch {
-            ConnectionStateObserver.updateConnectionState(true)
-        }
+        onConnected.invoke(webSocket)
         super.onOpen(webSocket, response)
     }
+
     override fun onMessage(webSocket: WebSocket, text: String) {
         Log.i(TAG, text)
         val json = JSONObject(text)
@@ -35,19 +31,13 @@ class ApiWebSocketListener(
     }
 
     override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
-        CoroutineScope(Dispatchers.IO).launch {
-            ConnectionStateObserver.updateConnectionState(false)
-        }
         Log.e(TAG, "Connection to Server lost ", t)
-        onConnectionLoss.invoke()
+        onConnectionLoss.invoke(webSocket)
     }
 
     override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {
-        CoroutineScope(Dispatchers.IO).launch {
-            ConnectionStateObserver.updateConnectionState(false)
-        }
         Log.i(TAG, "Connection Closed: $code. Reason: $reason")
-        onConnectionLoss.invoke()
+        onConnectionLoss.invoke(webSocket)
     }
 
     companion object {

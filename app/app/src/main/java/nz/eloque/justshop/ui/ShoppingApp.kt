@@ -47,7 +47,6 @@ import kotlinx.coroutines.flow.StateFlow
 import nz.eloque.compose_kit.input.AbbreviatingText
 import nz.eloque.compose_kit.scaffold.AppScaffold
 import nz.eloque.justshop.R
-import nz.eloque.justshop.model.ConnectionStateObserver
 import nz.eloque.justshop.ui.about.AboutView
 import nz.eloque.justshop.ui.onboarding.OnboardingView
 import nz.eloque.justshop.ui.settings.SettingsView
@@ -69,7 +68,6 @@ fun ShoppingList(
     onboardedFlow: StateFlow<Boolean>,
     modifier: Modifier = Modifier
 ) {
-    val connectionStateFlow = ConnectionStateObserver.isConnected().collectAsStateWithLifecycle(false)
     val onboarded by onboardedFlow.collectAsStateWithLifecycle()
     val startDestination = remember { if (onboarded) Screen.ShoppingList.route else Screen.Onboarding.route }
 
@@ -101,6 +99,7 @@ fun ShoppingList(
             }
             composable(Screen.ShoppingList.route) {
                 val shoppingListViewModel: ShoppingListViewModel = hiltViewModel()
+                val connected by shoppingListViewModel.connected.collectAsStateWithLifecycle()
                 ShoppingListScaffold(
                     navController = navController,
                     title = stringResource(id = R.string.justshop),
@@ -113,7 +112,7 @@ fun ShoppingList(
                         }
                     }
                 ) { scrollBehavior ->
-                    if (!connectionStateFlow.value) {
+                    if (!connected) {
                         Box(modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
                         ) {

@@ -6,6 +6,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import nz.eloque.justshop.model.api.ShoppingListApi
 
@@ -24,6 +25,8 @@ class ShoppingListRepository @Inject constructor(
     }
 
     val items: Flow<List<ShoppingItem>> = shoppingItemDao.all()
+
+    val connected: StateFlow<Boolean> = shoppingListApi.connected
 
     fun connect() = shoppingListApi.connect()
 

@@ -33,6 +33,8 @@ class ShoppingListViewModel @Inject constructor(
         initialValue = emptyList()
     )
 
+    val connected: StateFlow<Boolean> = shoppingListRepository.connected
+
     val signInRequired: StateFlow<Boolean> = authStore.signInRequired
 
     private val _loginUrl = MutableStateFlow<Uri?>(null)

@@ -10,6 +10,9 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -70,6 +73,9 @@ class ShoppingListApi @Inject constructor(
     /** Full lists pushed by the server, in arrival order. Supports a single collector. */
     val listUpdates: Flow<List<ShoppingItem>> = _listUpdates.receiveAsFlow()
 
+    private val _connected = MutableStateFlow(false)
+    val connected: StateFlow<Boolean> = _connected.asStateFlow()
+
     @Volatile
     private var websocket: WebSocket? = null
     private var reconnectJob: Job? = null
@@ -111,6 +117,7 @@ class ShoppingListApi @Inject constructor(
         Log.d(TAG, "Socket closed")
         websocket?.cancel()
         websocket = null
+        _connected.value = false
     }
 
     private fun openSocket() {
@@ -119,11 +126,24 @@ class ShoppingListApi @Inject constructor(
             websocket = client
                 .newWebSocket(
                     Request.Builder().url(toApiUrl("${baseUrlProvider.invoke()}/ws")).build(),
-                    ApiWebSocketListener({ _listUpdates.trySend(it.values.toList()) }) {
-                        closeSocket()
-                    }
+                    ApiWebSocketListener(
+                        onConnected = ::onSocketOpen,
+                        onListUpdate = { _listUpdates.trySend(it.values.toList()) },
+                        onConnectionLoss = ::onSocketLost,
+                    )
                 )
         }
+    }
+
+    // Synchronized so an early onOpen waits until openSocket() has assigned websocket.
+    @Synchronized
+    private fun onSocketOpen(socket: WebSocket) {
+        if (socket === websocket) _connected.value = true
+    }
+
+    @Synchronized
+    private fun onSocketLost(socket: WebSocket) {
+        if (socket === websocket) closeSocket()
     }
 
     suspend fun deleteChecked() {
