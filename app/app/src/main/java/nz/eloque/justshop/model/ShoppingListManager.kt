@@ -1,10 +1,8 @@
 package nz.eloque.justshop.model
 
 import jakarta.inject.Inject
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import nz.eloque.justshop.model.api.ShoppingListApi
 import nz.eloque.justshop.model.shopping_list.ShoppingItem
 import nz.eloque.justshop.model.shopping_list.ShoppingItemRepository
@@ -15,12 +13,9 @@ class ShoppingListManager @Inject constructor(
     private val shoppingListApi: ShoppingListApi,
 ) {
 
-    fun handleApiUpdate(listUpdate: Map<UUID, ShoppingItem>) {
-        val items = listUpdate.values
-        CoroutineScope(Dispatchers.IO).launch {
-            shoppingItemRepository.deleteAllExcept(items)
-            shoppingItemRepository.insert(items)
-        }
+    /** Must run on the caller's thread so updates are applied in the order they arrive. */
+    fun handleApiUpdate(listUpdate: Map<UUID, ShoppingItem>) = runBlocking {
+        shoppingItemRepository.replaceAll(listUpdate.values)
     }
 
     suspend fun update(shoppingItem: ShoppingItem): Boolean = shoppingListApi.update(shoppingItem)
