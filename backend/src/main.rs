@@ -88,9 +88,10 @@ async fn persistence_task(
 
     info!("Received signal, saving state and shutting down.");
     save_sessions(&session_path, &oidc).await;
-    state::save_state(&state_path, &shopping_list)
-        .await
-        .expect("Failed to save state on shutdown");
+    if let Err(e) = state::save_state(&state_path, &shopping_list).await {
+        error!("Saving state on shutdown failed: {e}");
+        std::process::exit(1);
+    }
     std::process::exit(0);
 }
 
