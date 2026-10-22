@@ -3,6 +3,7 @@ use std::future::pending;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, RwLock};
 use tokio::signal::unix::{signal, Signal, SignalKind};
+use tokio::sync::Notify;
 use tokio::time::{interval, Duration};
 use tracing::{error, info, warn};
 
@@ -55,6 +56,7 @@ async fn persistence_task(
     state_path: PathBuf,
     session_path: PathBuf,
     shopping_list: Arc<RwLock<ShoppingListContent>>,
+    list_changed: Arc<Notify>,
     oidc: Option<Arc<OidcAuth>>,
     mut sigint: Signal,
     mut sigterm: Signal,
@@ -72,6 +74,11 @@ async fn persistence_task(
                     oidc.sessions.write().unwrap().prune(auth::now(), oidc.session_idle_timeout);
                 }
                 save_sessions(&session_path, &oidc).await;
+            }
+            _ = list_changed.notified() => {
+                if let Err(e) = state::save_state(&state_path, &shopping_list).await {
+                    error!("Saving state failed: {e}");
+                }
             }
             _ = sessions_changed(&oidc) => save_sessions(&session_path, &oidc).await,
             _ = sigint.recv() => break,
@@ -123,17 +130,19 @@ async fn main() {
 
     let shopping_list = state::load_state(&cli.state_file).await.expect("Failed to load state file.");
     let shopping_list = Arc::new(RwLock::new(shopping_list));
+    let list_changed = Arc::new(Notify::new());
     let oidc = load_oidc(&cli).await;
 
     let app_state = api::AppState {
         shopping_list: shopping_list.clone(),
         users: api::Users::default(),
+        list_changed: list_changed.clone(),
         oidc: oidc.clone(),
     };
 
     let sigint = signal(SignalKind::interrupt()).expect("Failed to install SIGINT handler");
     let sigterm = signal(SignalKind::terminate()).expect("Failed to install SIGTERM handler");
-    tokio::spawn(persistence_task(cli.state_file, cli.session_file, shopping_list, oidc, sigint, sigterm));
+    tokio::spawn(persistence_task(cli.state_file, cli.session_file, shopping_list, list_changed, oidc, sigint, sigterm));
 
     let listener = tokio::net::TcpListener::bind("0.0.0.0:3030")
         .await

@@ -144,6 +144,7 @@ fn oidc_state(idp: &Idp) -> AppState {
     AppState {
         shopping_list: Arc::new(RwLock::new(lists)),
         users: Users::default(),
+        list_changed: Arc::default(),
         oidc: Some(Arc::new(OidcAuth::new(config, Sessions::default()).unwrap())),
     }
 }
@@ -264,7 +265,7 @@ async fn auth_config_reports_mode() {
     let (_, body) = send(&oidc_state(&idp), "GET", "/v2/auth-config", None, None).await;
     assert_eq!(body["mode"], "oidc");
 
-    let plain = AppState { shopping_list: Arc::default(), users: Users::default(), oidc: None };
+    let plain = AppState { shopping_list: Arc::default(), users: Users::default(), list_changed: Arc::default(), oidc: None };
     let (_, body) = send(&plain, "GET", "/v2/auth-config", None, None).await;
     assert_eq!(body["mode"], "none");
     assert_eq!(send(&plain, "POST", "/v2/auth/oidc/start", None, Some(json!({

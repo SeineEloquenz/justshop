@@ -13,6 +13,7 @@ async fn websocket_receives_broadcast() {
     let state = AppState {
         shopping_list: Arc::new(RwLock::new(HashMap::new())),
         users: Users::default(),
+        list_changed: Arc::default(),
         oidc: None,
     };
 

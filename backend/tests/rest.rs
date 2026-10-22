@@ -1,5 +1,6 @@
 use axum::body::Body;
 use axum::http::{Request, StatusCode};
+use futures::FutureExt;
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use tower::ServiceExt; // for `oneshot`
@@ -13,6 +14,7 @@ fn test_state() -> AppState {
     AppState {
         shopping_list: Arc::new(RwLock::new(HashMap::new())),
         users: Users::default(),
+        list_changed: Arc::default(),
         oidc: None,
     }
 }
@@ -56,6 +58,7 @@ async fn update_inserts_item_into_existing_list() {
         .unwrap();
 
     assert_eq!(response.status(), StatusCode::OK);
+    assert!(state.list_changed.notified().now_or_never().is_some(), "update should trigger a save");
 
     let lists = state.shopping_list.read().unwrap();
     let list = lists.get("junkyard").expect("list should exist");

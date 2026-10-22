@@ -7,7 +7,7 @@ use futures::{SinkExt, StreamExt};
 use std::collections::HashMap;
 use std::sync::RwLock;
 use std::sync::{atomic::{AtomicUsize, Ordering}, Arc};
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Notify};
 use tracing::{debug, error, info};
 
 use crate::auth::OidcAuth;
@@ -18,6 +18,7 @@ use crate::shopping_list::ShoppingListContent;
 pub struct AppState {
     pub shopping_list: Arc<RwLock<ShoppingListContent>>,
     pub users: Users,
+    pub list_changed: Arc<Notify>,
     pub oidc: Option<Arc<OidcAuth>>,
 }
 
@@ -65,6 +66,7 @@ pub async fn update_shopping_item(
         info!("Updating item {:?} in list {}.", updated_item, list_name);
         list.insert(updated_item.id, updated_item);
     }
+    state.list_changed.notify_one();
     update(state.shopping_list.clone(), state.users);
     StatusCode::OK
 }
@@ -82,6 +84,7 @@ pub async fn delete_checked(
         let new_count = list.len();
         info!("Removed {} checked items.", old_count - new_count);
     }
+    state.list_changed.notify_one();
     update(state.shopping_list.clone(), state.users);
     StatusCode::OK
 }
@@ -97,6 +100,7 @@ pub async fn delete_all(
         list.clear();
         info!("Removed all items.");
     }
+    state.list_changed.notify_one();
     update(state.shopping_list.clone(), state.users);
     StatusCode::OK
 }
