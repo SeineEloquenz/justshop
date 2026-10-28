@@ -1,7 +1,7 @@
 [versions]
 accompanistPermissions = "0.37.3"
 activityCompose = "1.13.0"
-browser = "1.8.0"
+browser = "1.10.0"
 androidGradlePlugin = "9.4.1"
 composeBom = "2026.09.00"
 composeKit = "0.5.9"
@@ -16,7 +16,7 @@ ksp = "2.3.12"
 ktx = "1.19.1"
 material = "1.14.0"
 navigationCompose = "2.10.2"
-okhttp = "5.5.0"
+okhttp = "5.5.1"
 preferenceKtx = "1.2.1"
 room = "2.8.5"
 
